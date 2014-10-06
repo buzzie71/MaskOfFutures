@@ -1,0 +1,34 @@
+name: MaskOfFutures
+main: com.gmail.buzziespy.MaskOfFutures.MaskOfFutures
+version: 0.5
+
+commands:
+   zhorse:
+      description: Spawns an undead horse
+      usage: /zhorse
+      permission: mof.horse
+      permission-message:
+   shorse:
+      description: Spawns an skeletal horse
+      usage: /shorse
+      permission: mof.horse
+      permission-message:
+   mof:
+      description: Shows configuration options
+      usage: /mof [option] [setting]
+      permission: mof.change
+      permission-message: "You do not have permission to use this!"
+      
+permissions:
+   mof.*:
+      description: Admin level access 
+      child:
+         mof.change: true
+         mof.horse: true
+   mof.change:
+      description: Allows viewing and changing config options
+      default: op
+   mof.horse:
+      description: Allows spawning of special horses
+      default: op     
+ 

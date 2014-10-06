@@ -1,0 +1,136 @@
+death-signs: false
+
+death-msgs: true
+
+brick-dropping: false
+
+signtext:
+   zombie:
+      1: 
+      2: 
+   skeleton:
+      1:
+      2:
+   creeper:
+
+msg:
+   player:
+      item:
+         - "wielding a &i"
+      noitem:
+         - "&e&p&3 was slain by &e&z&3"
+   
+   zombie:
+      item:
+         - "with a &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
+   skeleton:
+      item:
+         - "with a &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
+   pigzombie:
+      item:
+         - "with a &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
+   arrow:
+      skeleton:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p &3was shot by &e&z&3"
+      player:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p &3was shot by &e&z&3"
+      dispenser:
+         - "&e&p &3was shot by &eHerobrine&3"
+         
+   fireball:
+      ghast:
+         - "&e&p&3 was fireballed by &e&z&3"
+      blaze:
+         - "&e&p&3 was fireballed by &e&z&3"
+      dispenser:
+         - "&e&p&3 was fireballed by &eHerobrine&3"
+         
+   potion:
+      witch:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p&3 was killed by &e&z&3"
+      player:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p&3 was turned into a newt by &e&z&3"
+      
+   creeper:
+      - "&e&p&3 was blown up by &e&z&3"
+      
+   spider:
+      - "&e&p&3 was slain by &e&z&3"
+   
+   slime:
+      - "&e&p&3 was slain by &e&z&3"
+   
+   wolf:
+      - "&e&p&3 was slain by &e&z&3" 
+   
+   blaze:
+      - "&e&p&3 was slain by &e&z&3"
+         
+   fall:
+      - "&e&p &3fell from a high place"
+      
+   cactuspoke:
+      - "&e&p &3was pricked to death"
+      
+   lava:
+      - "&e&p &3tried to swim in lava"
+      
+   fire:
+      - "&e&p &3burned to death"
+      
+   wither:
+      - "&e&p &3withered away"
+      
+   suffocation:
+      - "&e&p &3suffocated in a wall"
+      
+   drowning:
+      - "&e&p &3drowned"
+      
+   starvation:
+      - "&e&p &3starved to death"
+      
+   thorns:
+      noitem:
+         - "&e&p &3was killed trying to hurt &e&z&3"
+      item:
+         - "holding a &i"
+      
+   void:
+      - "&e&p &3fell into the void"
+      
+   magic:
+      - "&e&p &3was magic'd dead by &eHerobrine&3"
+      
+   anvil:
+      - "&e&p &3was squashed by a falling &eAnvil&3"
+      
+   feather:
+      - "&e&p &3was tickled to death by &e&z&3 wielding &i"
+      
+   rawfish:
+      - "&e&z &3scored a FISH KILL on &e&p&3 with &i"
+      
+         
+§:

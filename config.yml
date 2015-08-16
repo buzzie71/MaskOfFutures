@@ -1,8 +1,15 @@
+### FEATURE CONFIG OPTIONS ###
+# death-signs implementation is incomplete, it should always be set to false
+# the others can be modified in-game
+
 death-signs: false
 
-death-msgs: true
+death-msgs: false
 
 brick-dropping: false
+
+### DEATH SIGNS CONFIG ###
+# Incomplete implementation, this can be ignored...?
 
 signtext:
    zombie:
@@ -13,28 +20,45 @@ signtext:
       2:
    creeper:
 
+### DEATH MESSAGES ###
+# This will be of most interest
+
+# &p is used to denote victim player name
+# &z is used to denote killer name (name of player if it is a player, name of mob if it has one, otherwise
+#    just a mob type name eg. Zombie)
+# &i is used to denote an item name. This will pull from Bukkit's own list of items according to Material enum
+#    or display the item's name if it was named on an anvil or otherwise given a custom name
+# All other & codes are MC color codes (see: http://minecraft.gamepedia.org/Formatting_codes or search
+#    "Formatting codes" on whatever the Minecraft wiki URL is)
+
+# Message will read: "<noitem message> <item message>" if item/noitem is specified
+# or: "<message>" if not.
+
+# REMEMBER: Apostrophes need two 's in order to display.  Keep a backup of this file before you plug it in.
+# A syntax error will result in this config file (in plugins folder) being wiped!
+
 msg:
    player:
       item:
-         - "wielding a &i"
+         - "wielding &i"
       noitem:
          - "&e&p&3 was slain by &e&z&3"
    
    zombie:
       item:
-         - "with a &i"
+         - "with &i"
       noitem:
          - "&e&p &3was slain by &e&z&3"
          
    skeleton:
       item:
-         - "with a &i"
+         - "with &i"
       noitem:
          - "&e&p &3was slain by &e&z&3"
          
    pigzombie:
       item:
-         - "with a &i"
+         - "with &i"
       noitem:
          - "&e&p &3was slain by &e&z&3"
          
@@ -71,12 +95,17 @@ msg:
             - "with &i"
          noitem:
             - "&e&p&3 was turned into a newt by &e&z&3"
+      dispenser:
+         - "A &e&z&3 turned &e&p&3 into a newt"
       
    creeper:
       - "&e&p&3 was blown up by &e&z&3"
       
    spider:
       - "&e&p&3 was slain by &e&z&3"
+      
+   cavespider:
+      - "&e&p&3 was slain again by &e&z&3"
    
    slime:
       - "&e&p&3 was slain by &e&z&3"
@@ -86,6 +115,36 @@ msg:
    
    blaze:
       - "&e&p&3 was slain by &e&z&3"
+      
+   silverfish:
+      - "&e&p&3 was slain by &e&z&3"
+   
+   endermite:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   magmacube:
+      - "&e&p&3 was fried by &e&z&3"
+      
+   enderman:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   irongolem:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   rabbit:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   guardian:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   elderguardian:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   enderdragon:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   pearl:
+      - "&e&p&3 overzealously pearled into the ground"
          
    fall:
       - "&e&p &3fell from a high place"
@@ -100,7 +159,12 @@ msg:
       - "&e&p &3burned to death"
       
    wither:
-      - "&e&p &3withered away"
+      wither:
+         - "&e&p &3withered away"
+      explosion:
+         - "&e&p &3was blown up by &e&z&3"
+      kill:
+         - "&e&p &3was slain by &e&z&3"
       
    suffocation:
       - "&e&p &3suffocated in a wall"
@@ -115,7 +179,7 @@ msg:
       noitem:
          - "&e&p &3was killed trying to hurt &e&z&3"
       item:
-         - "holding a &i"
+         - "holding &i"
       
    void:
       - "&e&p &3fell into the void"
@@ -132,5 +196,5 @@ msg:
    rawfish:
       - "&e&z &3scored a FISH KILL on &e&p&3 with &i"
       
-         
-§:
+   glowstone:
+      - "&e&p&3 was killed by &e&z&3 with a bucket of puppies"

@@ -10,6 +10,8 @@ This plugin contains three features of varying degrees of completeness originall
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
 
+The plugin is named as a reference to the Kanohi Olisi, the Mask of Alternate Futures, worn by Karzahni in the BIONICLE mythos.
+
 ===
 MoF In-Game Config Changing
 ===
@@ -28,7 +30,7 @@ will reload the config file.
 Brick Dropping
 ===
 
-Whenever a Wither explodes when it spawns in, all players on the server will drop a brick at their feet with the lore: "<Player> dropped this on hearing a Wither".  Players in Modmode will not drop this brick to prevent the sight of bricks falling out of the sky, but their presence will instead be logged to console in the hope that they will be reimbursed some time after they leave Modmode.  The list of players who received a brick will also be logged to console for record keeping.
+Whenever a Wither explodes when it spawns in, all players on the server will drop a brick at their feet with the lore: "-Player- dropped this on hearing a Wither".  Players in Modmode will not drop this brick to prevent the sight of bricks falling out of the sky, but their presence will instead be logged to console in the hope that they will be reimbursed some time after they leave Modmode.  The list of players who received a brick will also be logged to console for record keeping.
 
 ===
 Death Messages

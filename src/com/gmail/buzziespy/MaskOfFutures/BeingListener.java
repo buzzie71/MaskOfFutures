@@ -28,11 +28,13 @@ package com.gmail.buzziespy.MaskOfFutures;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 
 import nu.nerd.modmode.ModMode;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -68,6 +70,7 @@ import org.bukkit.entity.Spider;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Witch;
 import org.bukkit.entity.Wither;
+import org.bukkit.entity.WitherSkull;
 import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
@@ -85,6 +88,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.gmail.buzziespy.MaskOfFutures.MaskOfFutures;
@@ -111,7 +115,7 @@ public final class BeingListener implements Listener{
 		@EventHandler
 		public void onWitherExplode(EntityExplodeEvent e)
 		{
-			plugin.getLogger().info("EntityExplodeEvent! " + e.getEntity().getName().toString());
+			//plugin.getLogger().info("EntityExplodeEvent! " + e.getEntity().getName().toString());
 			if (plugin.getConfig().getBoolean("brick-dropping") && e.getEntityType().equals(EntityType.WITHER))
 			{
 				ItemStack woolbrick = new ItemStack(Material.CLAY_BRICK, 1);
@@ -119,7 +123,9 @@ public final class BeingListener implements Listener{
 				List<String> bricklore = new ArrayList<String>(); //not sure how to optimize this
 				
 				
-				Player[] playerList = (Player[]) plugin.getServer().getOnlinePlayers().toArray();
+				//Player[] playerList = (Player[])plugin.getServer().getOnlinePlayers().toArray();
+				Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+				Player[] playerList = players.toArray(new Player[players.size()]);
 				
 				String log = "Players who dropped bricks on hearing wither: ";
 				for (Player p: playerList)
@@ -156,7 +162,7 @@ public final class BeingListener implements Listener{
 						p.removeMetadata("MaskOfFutures.wither", plugin);
 					}
 					
-					log += p.getName();
+					log += p.getName() + " ";
 				}
 				
 				plugin.getLogger().info(log);
@@ -611,7 +617,7 @@ public final class BeingListener implements Listener{
 							e.setDeathMessage(getDeathReason("enderman", e.getEntity().getName(), z));
 						}
 					}
-					//Enderman kills
+					//Enderdragon kills
 					else if (ee.getDamager() instanceof EnderDragon)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
@@ -709,6 +715,28 @@ public final class BeingListener implements Listener{
 							}
 						}
 					}
+					//Wither skull kill - seems this is registered differently from Wither
+					else if (ee.getDamager() instanceof WitherSkull)
+					{
+						WitherSkull tp = (WitherSkull)ee.getDamager();
+						//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
+						//NOTE: Casting projectile shooters as LivingEntities no longer appears to work
+						//LivingEntity le = (LivingEntity)tp.getShooter();
+						ProjectileSource le = (ProjectileSource)tp.getShooter();
+						//plugin.getLogger().info("Projectile source: " + le.toString());
+						if (le instanceof Wither)
+						{
+							Wither w = (Wither)le;
+							if (!plugin.getConfig().getBoolean("death-msgs"))
+							{
+								plugin.getLogger().info(getDeathReason("wither.kill", e.getEntity().getName(), w));
+							}
+							else
+							{
+								e.setDeathMessage(getDeathReason("wither.kill", e.getEntity().getName(), w));
+							}
+						}
+					}
 					//arrow kill
 					else if (ee.getDamager() instanceof Arrow)
 					{
@@ -792,7 +820,7 @@ public final class BeingListener implements Listener{
 								e.setDeathMessage(getDeathReason("potion.player", e.getEntity().getName(), p, itemWeapon));
 							}
 						}
-						else if (le instanceof ThrownPotion)
+						else if (le instanceof BlockProjectileSource) //ie. dispenser
 						{
 							if (!plugin.getConfig().getBoolean("death-msgs"))
 							{

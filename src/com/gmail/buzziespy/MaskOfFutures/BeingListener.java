@@ -16,6 +16,8 @@ package com.gmail.buzziespy.MaskOfFutures;
  * - There is a "<X> was pummeled by Wither" vanilla death message that I haven't been able to reproduce
  * 		- Custom death messages apparently do not catch this
  * 
+ * All of the above have been fixed in the 0.10.4 release.
+ * 
  * Other than that, there is plenty of room for code condensing if anyone feels like taking a stab at it.
  * 
  * There is some extraneous code related to a sign appearing at the location of a death present in the

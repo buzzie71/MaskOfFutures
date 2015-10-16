@@ -4,8 +4,8 @@ MaskOfFutures
 This plugin contains three features of varying degrees of completeness originally prepared for Nerd.Nu's Halloween 2014 event.
 
 - Death signs (incomplete)
-- Brick dropping from wither sounds (complete, though broken by 1.8 Spigot transition)
-- Death messages (complete, though made incomplete by transition to 1.8 Spigot)
+- Brick dropping from wither sounds
+- Death messages
 
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
@@ -41,3 +41,10 @@ These custom death messages are specified in the config file (config.yml) and, w
 - Reason of death
 - Last entity to deal killing blow to player (if killed by entity such as a mob)
 - Death message (if it exists; if this does not appear, then a death message for that particular reason and killer is missing!)
+
+===
+Changelog
+===
+10.4: 
+   - Fixed brick dropping.  
+   - Plugin now catches dispenser potion kills and Wither skull kills.

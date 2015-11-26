@@ -4,22 +4,22 @@ package com.gmail.buzziespy.MaskOfFutures;
  * Comments for MoF have been added to aid in maintainability.
  * NOTE: Most of the interesting code is over in BeingListener, which handles all the listening
  * for this plugin.
- * 
+ *
  * This code was written back in 1.7, before the Bukkit DMCA madness.  It was discovered when
  * nerd.nu transitioned to 1.8 that odd things about the 1.8 Spigot version in use broke some things
  * that previously worked.  Among them:
- * 
+ *
  * - Brick dropping no longer works even with the config option set to true
  * - Kills with a potion are shown as "<X> was killed by entity.ThrownPotion.name" or something similarly esoteric
  * 		- Custom death messages cannot catch it
  * 		- This appears to be the case even with the plugin disabled
  * - There is a "<X> was pummeled by Wither" vanilla death message that I haven't been able to reproduce
  * 		- Custom death messages apparently do not catch this
- * 
+ *
  * All of the above have been fixed in the 0.10.4 release.
- * 
+ *
  * Other than that, there is plenty of room for code condensing if anyone feels like taking a stab at it.
- * 
+ *
  * There is some extraneous code related to a sign appearing at the location of a death present in the
  * code below - in the interests of completing the plugin I had opted to leave it in as long as it did
  * not interfere with the other features being programmed.  I have endeavored to mark as many of these
@@ -97,23 +97,23 @@ import com.gmail.buzziespy.MaskOfFutures.MaskOfFutures;
 
 
 public final class BeingListener implements Listener{
-	
+
 		static MaskOfFutures plugin;
 		//final boolean SADIST_MODE = true;
-		
+
 		public BeingListener(MaskOfFutures p)
 		{
 			plugin = p;
 			plugin.getServer().getPluginManager().registerEvents(this, plugin);
-			
+
 			plugin.getLogger().info("Loading config file...");
 			//load up the config file
 			plugin.getConfig();
 			//save copy
 			plugin.saveDefaultConfig();
 		}
-		
-		
+
+
 		@EventHandler
 		public void onWitherExplode(EntityExplodeEvent e)
 		{
@@ -123,12 +123,12 @@ public final class BeingListener implements Listener{
 				ItemStack woolbrick = new ItemStack(Material.CLAY_BRICK, 1);
 				ItemMeta woolbrickInfo = woolbrick.getItemMeta();
 				List<String> bricklore = new ArrayList<String>(); //not sure how to optimize this
-				
-				
+
+
 				//Player[] playerList = (Player[])plugin.getServer().getOnlinePlayers().toArray();
 				Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
 				Player[] playerList = players.toArray(new Player[players.size()]);
-				
+
 				String log = "Players who dropped bricks on hearing wither: ";
 				for (Player p: playerList)
 				{
@@ -138,7 +138,7 @@ public final class BeingListener implements Listener{
 						bricklore.add(ChatColor.GOLD + "" + ChatColor.ITALIC + p.getName() + " dropped this on hearing a Wither");
 						woolbrickInfo.setLore(bricklore);
 						woolbrick.setItemMeta(woolbrickInfo);
-						
+
 						//Quick and dirty way of doing this is to check for survival mode and flight enabled
 						if (plugin.mmode != null)
 						{
@@ -156,17 +156,17 @@ public final class BeingListener implements Listener{
 							p.getWorld().dropItemNaturally(p.getLocation(), woolbrick);
 						}
 						bricklore.clear();
-						
+
 						p.setMetadata("MaskOfFutures.wither", new FixedMetadataValue(plugin, "true"));
 					}
 					else //if player has the metadata then the brick has already been dispensed
 					{
 						p.removeMetadata("MaskOfFutures.wither", plugin);
 					}
-					
+
 					log += p.getName() + " ";
 				}
-				
+
 				plugin.getLogger().info(log);
 			}
 			else
@@ -177,7 +177,7 @@ public final class BeingListener implements Listener{
 				}
 			}
 		}
-		
+
 		//related to sign drop on death
 		@EventHandler
 		public void onSignBreak(BlockBreakEvent e)
@@ -193,7 +193,7 @@ public final class BeingListener implements Listener{
 				}
 			}
 		}
-		
+
 		//for undead horse taming
 		@EventHandler
 		public void onMobClick(PlayerInteractEntityEvent e)
@@ -247,7 +247,7 @@ public final class BeingListener implements Listener{
 				}
 			}
 		}
-		
+
 		@EventHandler
 		public void onPlayerDeath(PlayerDeathEvent e)
 		{
@@ -256,19 +256,19 @@ public final class BeingListener implements Listener{
 			{
 				plugin.getLogger().info("Death reason: " + e.getEntity().getLastDamageCause().getCause());
 			}
-			
+
 			//related to sign drop on death
 			//signpoint calculations here - handling the death reason takes place after handling the death message
 			//in order to separate death messages from death signs
 			String signReason = "";
-			
+
 			Location deathpoint = e.getEntity().getLocation();
 			float yaw = deathpoint.getYaw();
 			boolean isInAir = false;
 			boolean isUnderGround = false; //I don't think this will matter at all but left this here in case
-			
+
 			Location signpoint = new Location(e.getEntity().getWorld(), deathpoint.getBlockX()+0.5, deathpoint.getBlockY()+0.5, deathpoint.getBlockZ()+0.5);
-			
+
 			//check if signpoint is on a solid block and not in air
 			while (signpoint.getBlock().getRelative(0, -1, 0).isEmpty() || signpoint.getBlock().getRelative(0, -1, 0).isLiquid())
 			{
@@ -280,7 +280,7 @@ public final class BeingListener implements Listener{
 					break;
 				}
 			}
-			
+
 			//check if signpoint is on a solid block and not underground
 			while (!signpoint.getBlock().isEmpty() && !signpoint.getBlock().getType().equals(Material.WATER))
 			{
@@ -291,16 +291,16 @@ public final class BeingListener implements Listener{
 					signpoint = null; //if signpoint goes beyond the world ceiling, do not place a sign on death
 				}
 			}
-			
+
 			//related to sign drop on death - proposed death sign message format
 			/* Messages (Line char limit 15; one needs to be 13 to accomodate a color code):
-			 * 
+			 *
 			 *   " verylongname"
 			 *   "had a great"
 			 *   "fall"
 			 *   "&110-31 00:00"
 			 */
-			
+
 			Player victim = (Player)e.getEntity();
 			//Handle zapping by TestPlugin (personal project, not a nerd plugin) first
 			if (victim.hasMetadata("TestPlugin.lightningKill"))
@@ -312,42 +312,28 @@ public final class BeingListener implements Listener{
 			{
 				//e.setMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " had a bit too much to drink");
 			}
-			
+
 			else if (victim.getLastDamageCause() instanceof EntityDamageByEntityEvent)
 			{ //handle all entity-related deaths here
 				EntityDamageByEntityEvent ee = (EntityDamageByEntityEvent)victim.getLastDamageCause();
-				
+
 				//DEBUG:
 				if (!plugin.getConfig().getBoolean("death-msgs"))
 				{
 					plugin.getLogger().info("Last damager: " + ee.getDamager().getType().toString());
 				}
-				
+
 				if (ee.getDamager() instanceof Player)
 				{  //handle player kills here
 					LivingEntity z = (LivingEntity)ee.getDamager();
 					ItemStack itemWeapon = z.getEquipment().getItemInHand();
 					if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 					{
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("player", e.getEntity().getName(), z, itemWeapon));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("player", e.getEntity().getName(), z, itemWeapon));
-						}
+					    dispatchDeathMessage(e, getDeathReason("player", e.getEntity().getName(), z, itemWeapon));
 					}
 					else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
 					{
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
+					    dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 					}
 				}
 				else
@@ -356,41 +342,27 @@ public final class BeingListener implements Listener{
 					 * NOTE: Use the getDeathReason with the ItemStack parameter if you think a weapon can be
 					 * used in the kill.  If you use that, you MUST specify item/noitem in the corresponding
 					 * config entry!  Otherwise console will vomit exceptions because it can't find
-					 * configkey.noitem and configkey.item in the config. 
+					 * configkey.noitem and configkey.item in the config.
 					 */
 					//Zombie kill
 					if (ee.getDamager() instanceof Zombie && !(ee.getDamager() instanceof PigZombie))
 					{
-						
+
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						ItemStack itemWeapon = z.getEquipment().getItemInHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("zombie", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("zombie", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("zombie", e.getEntity().getName(), z, itemWeapon));
 						}
 						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
-						
+
 						placeSignFromReason("zombie", signpoint, e.getEntity());
-						
+
 					}
-			
+
 					//Skeleton kill
 					else if (ee.getDamager() instanceof Skeleton)
 					{
@@ -398,29 +370,15 @@ public final class BeingListener implements Listener{
 						ItemStack itemWeapon = z.getEquipment().getItemInHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("skeleton", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("skeleton", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("skeleton", e.getEntity().getName(), z, itemWeapon));
 						}
 						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
 						placeSignFromReason("skeleton", signpoint, e.getEntity());
 					}
-					
+
 					//Zombie Pigman kill
 					else if (ee.getDamager() instanceof PigZombie)
 					{
@@ -428,111 +386,41 @@ public final class BeingListener implements Listener{
 						ItemStack itemWeapon = z.getEquipment().getItemInHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("pigzombie", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("pigzombie", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("pigzombie", e.getEntity().getName(), z, itemWeapon));
 						}
 						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
 						placeSignFromReason("pigzombie", signpoint, e.getEntity());
 					}
-					
-					
-					
+
 					//Creeper kill
 					else if (ee.getDamager() instanceof Creeper)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("creeper", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("creeper", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("creeper", e.getEntity().getName(), z));
 						placeSignFromReason("creeper", signpoint, e.getEntity());
 					}
 					//Anvil kill
 					else if (ee.getDamager() instanceof FallingBlock)
 					{
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("anvil", e.getEntity().getName()));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("anvil", e.getEntity().getName()));
-						}
+						dispatchDeathMessage(e, getDeathReason("anvil", e.getEntity().getName()));
 						placeSignFromReason("anvil", signpoint, e.getEntity());
 					}
 					//Slime kill
 					else if (ee.getDamager() instanceof Slime)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (z instanceof MagmaCube)
-						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("magmacube", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("magmacube", e.getEntity().getName(), z));
-							}
-						}
-						else
-						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("slime", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("slime", e.getEntity().getName(), z));
-							}
-						}
+						String killer = (z instanceof MagmaCube) ? "magmacube" : "slime";
+						dispatchDeathMessage(e, getDeathReason(killer, e.getEntity().getName(), z));
 					}
 					//Spider kill
 					else if (ee.getDamager() instanceof Spider)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (z instanceof CaveSpider)
-						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("cavespider", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("cavespider", e.getEntity().getName(), z));
-							}
-						}
-						else //normal spider
-						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("spider", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("spider", e.getEntity().getName(), z));
-							}
-						}
+						String killer = (z instanceof CaveSpider) ? "cavespider" : "spider";
+						dispatchDeathMessage(e, getDeathReason(killer, e.getEntity().getName(), z));
 						placeSignFromReason("spider", signpoint, e.getEntity());
 					}
 					//Witch kill
@@ -540,71 +428,36 @@ public final class BeingListener implements Listener{
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						ItemStack itemWeapon = z.getEquipment().getItemInHand();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("witch", e.getEntity().getName(), z, itemWeapon));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("witch", e.getEntity().getName(), z, itemWeapon));
-						}
+						dispatchDeathMessage(e, getDeathReason("witch", e.getEntity().getName(), z, itemWeapon));
 						placeSignFromReason("witch", signpoint, e.getEntity());
 					}
 					//Wolf kill
 					else if (ee.getDamager() instanceof Wolf)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("wolf", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("wolf", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("wolf", e.getEntity().getName(), z));
 						placeSignFromReason("wolf", signpoint, e.getEntity());
 					}
 					//Blaze kill
 					else if (ee.getDamager() instanceof Blaze)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("blaze", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("blaze", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("blaze", e.getEntity().getName(), z));
 						placeSignFromReason("blaze", signpoint, e.getEntity());
 					}
 					//Silverfish kill
 					else if (ee.getDamager() instanceof Silverfish)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("silverfish", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("silverfish", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("silverfish", e.getEntity().getName(), z));
 						placeSignFromReason("silverfish", signpoint, e.getEntity());
 					}
 					//Iron golem kills
 					else if (ee.getDamager() instanceof IronGolem)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("irongolem", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("irongolem", e.getEntity().getName(), z));
-						}
-						placeSignFromReason("silverfish", signpoint, e.getEntity());
+						dispatchDeathMessage(e, getDeathReason("irongolem", e.getEntity().getName(), z));
+						placeSignFromReason("irongolem", signpoint, e.getEntity());
 					}
 					//Enderman kills
 					else if (ee.getDamager() instanceof Enderman)
@@ -623,72 +476,35 @@ public final class BeingListener implements Listener{
 					else if (ee.getDamager() instanceof EnderDragon)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("enderdragon", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("enderdragon", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("enderdragon", e.getEntity().getName(), z));
 					}
 					//Rabbit kills
 					else if (ee.getDamager() instanceof Rabbit)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("rabbit", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("rabbit", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("rabbit", e.getEntity().getName(), z));
 					}
 					//Rabbit kills
 					else if (ee.getDamager() instanceof Endermite)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("endermite", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("endermite", e.getEntity().getName(), z));
-						}
+						dispatchDeathMessage(e, getDeathReason("endermite", e.getEntity().getName(), z));
 					}
 					//Guardian kill
 					if (ee.getDamager() instanceof Guardian)
 					{
-						
+
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						ItemStack itemWeapon = z.getEquipment().getItemInHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("guardian", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("guardian", e.getEntity().getName(), z));
-							}
+							dispatchDeathMessage(e, getDeathReason("guardian", e.getEntity().getName(), z));
 						}
 						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
-						
 						//placeSignFromReason("zombie", signpoint, e.getEntity());
-						
 					}
 					//Wither kill
 					else if (ee.getDamager() instanceof Wither)
@@ -696,25 +512,11 @@ public final class BeingListener implements Listener{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("wither.explosion", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("wither.explosion", e.getEntity().getName(), z));
-							}
+							dispatchDeathMessage(e, getDeathReason("wither.explosion", e.getEntity().getName(), z));
 						}
 						else
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("wither.kill", e.getEntity().getName(), z));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("wither.kill", e.getEntity().getName(), z));
-							}
+							dispatchDeathMessage(e, getDeathReason("wither.kill", e.getEntity().getName(), z));
 						}
 					}
 					//Wither skull kill - seems this is registered differently from Wither
@@ -729,14 +531,7 @@ public final class BeingListener implements Listener{
 						if (le instanceof Wither)
 						{
 							Wither w = (Wither)le;
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("wither.kill", e.getEntity().getName(), w));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("wither.kill", e.getEntity().getName(), w));
-							}
+							dispatchDeathMessage(e, getDeathReason("wither.kill", e.getEntity().getName(), w));
 						}
 					}
 					//arrow kill
@@ -748,44 +543,21 @@ public final class BeingListener implements Listener{
 						{
 							//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
 							LivingEntity le = (LivingEntity)arrow.getShooter();
+							ItemStack itemWeapon = le.getEquipment().getItemInHand();
 							if (le instanceof Skeleton)
 							{
-								ItemStack itemWeapon = le.getEquipment().getItemInHand();
-								if (!plugin.getConfig().getBoolean("death-msgs"))
-								{
-									plugin.getLogger().info(getDeathReason("arrow.skeleton", e.getEntity().getName(), le, itemWeapon));
-								}
-								else
-								{
-									e.setDeathMessage(getDeathReason("arrow.skeleton", e.getEntity().getName(), le, itemWeapon));
-								}
+								dispatchDeathMessage(e, getDeathReason("arrow.skeleton", e.getEntity().getName(), le, itemWeapon));
 							}
 							else if (le instanceof Player)
 							{
-								ItemStack itemWeapon = le.getEquipment().getItemInHand();
-								if (!plugin.getConfig().getBoolean("death-msgs"))
-								{
-									plugin.getLogger().info(getDeathReason("arrow.player", e.getEntity().getName(), le, itemWeapon));
-								}
-								else
-								{
-									e.setDeathMessage(getDeathReason("arrow.player", e.getEntity().getName(), le, itemWeapon));
-								}
+								dispatchDeathMessage(e, getDeathReason("arrow.player", e.getEntity().getName(), le, itemWeapon));
 							}
 						}
 						else
 						{
 							//most likely it came from a dispenser?
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
-							}
+							dispatchDeathMessage(e, getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
 						}
-						
 					}
 					else if (ee.getDamager() instanceof ThrownPotion)
 					{
@@ -800,40 +572,18 @@ public final class BeingListener implements Listener{
 						{
 							Witch w = (Witch)le;
 							ItemStack itemWeapon = w.getEquipment().getItemInHand();
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("potion.witch", e.getEntity().getName(), w, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("potion.witch", e.getEntity().getName(), w, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("potion.witch", e.getEntity().getName(), w, itemWeapon));
 						}
 						else if (le instanceof Player)
 						{
 							Player p = (Player)le;
 							ItemStack itemWeapon = p.getEquipment().getItemInHand();
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("potion.player", e.getEntity().getName(), p, itemWeapon));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("potion.player", e.getEntity().getName(), p, itemWeapon));
-							}
+							dispatchDeathMessage(e, getDeathReason("potion.player", e.getEntity().getName(), p, itemWeapon));
 						}
 						else if (le instanceof BlockProjectileSource) //ie. dispenser
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("potion.dispenser", e.getEntity().getName(), "Dispenser"));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("potion.dispenser", e.getEntity().getName(), "Dispenser"));
-							}
+							dispatchDeathMessage(e, getDeathReason("potion.dispenser", e.getEntity().getName(), "Dispenser"));
 						}
-						
 					}
 					else if (ee.getDamager() instanceof LargeFireball)
 					{
@@ -843,16 +593,9 @@ public final class BeingListener implements Listener{
 						LivingEntity le = (LivingEntity)tp.getShooter();
 						if (le instanceof Ghast) //almost always is but just in case
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("fireball.ghast", e.getEntity().getName(), le));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("fireball.ghast", e.getEntity().getName(), le));
-							}
+							dispatchDeathMessage(e, getDeathReason("fireball.ghast", e.getEntity().getName(), le));
 						}
-						
+
 					}
 					else if (ee.getDamager() instanceof SmallFireball)
 					{
@@ -862,49 +605,28 @@ public final class BeingListener implements Listener{
 						ProjectileSource le = (ProjectileSource)tp.getShooter();
 						if (le instanceof Blaze)
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("fireball.blaze", e.getEntity().getName(), (Blaze)le));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("fireball.blaze", e.getEntity().getName(), (Blaze)le));
-							}
+							dispatchDeathMessage(e, getDeathReason("fireball.blaze", e.getEntity().getName(), (Blaze)le));
 						}
 						//need handling for dispensed small fireballs (fire charges)
 						else
 						{
-							if (!plugin.getConfig().getBoolean("death-msgs"))
-							{
-								plugin.getLogger().info(getDeathReason("fireball.dispenser", e.getEntity().getName()));
-							}
-							else
-							{
-								e.setDeathMessage(getDeathReason("fireball.dispenser", e.getEntity().getName()));
-							}
+							dispatchDeathMessage(e, getDeathReason("fireball.dispenser", e.getEntity().getName()));
 						}
 					}
 					//overzealous pearl suicides
 					else if (ee.getDamager() instanceof EnderPearl)
 					{
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("pearl", e.getEntity().getName()));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("pearl", e.getEntity().getName()));
-						}
+						dispatchDeathMessage(e, getDeathReason("pearl", e.getEntity().getName()));
 					}
 				}
 			}
 			else //handle all non-entity-related deaths here
 			{
 				EntityDamageEvent.DamageCause lastHit = victim.getLastDamageCause().getCause();
-			
+
 				//DEBUG
 				//plugin.getLogger().info("Damage Type: " + victim.getLastDamageCause().getCause());
-				
+
 				if (lastHit.equals(EntityDamageEvent.DamageCause.SUICIDE))
 				{
 					if (!plugin.getConfig().getBoolean("death-msgs"))
@@ -923,141 +645,55 @@ public final class BeingListener implements Listener{
 				//}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FALLING_BLOCK))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("anvil", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("anvil", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("anvil", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FALL))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("fall", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("fall", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("fall", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.LAVA))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("lava", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("lava", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("lava", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.CONTACT))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("cactuspoke", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("cactuspoke", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("cactuspoke", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FIRE_TICK) || lastHit.equals(EntityDamageEvent.DamageCause.FIRE))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("fire", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("fire", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("fire", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.WITHER))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("wither.wither", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("wither.wither", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("wither.wither", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.SUFFOCATION))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("suffocation", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("suffocation", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("suffocation", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.DROWNING))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("drowning", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("drowning", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("drowning", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.STARVATION))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("starvation", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("starvation", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("starvation", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.VOID))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("void", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("void", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("void", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.MAGIC))
 				{
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						plugin.getLogger().info(getDeathReason("magic", e.getEntity().getName()));
-					}
-					else
-					{
-						e.setDeathMessage(getDeathReason("magic", e.getEntity().getName()));
-					}
+					dispatchDeathMessage(e, getDeathReason("magic", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
 				{
-					//if (e.getEntity())
-					if (!plugin.getConfig().getBoolean("death-msgs"))
-					{
-						//plugin.getLogger().info(getDeathReason("magic", e.getEntity().getName()));
-					}
-					else
-					{
-						//e.setDeathMessage(getDeathReason("magic", e.getEntity().getName()));
-					}
+					// Not currently handled.
 				}
 			}
 		}
-			
-		
+
 		//for not-entity kill
 		public static String getDeathReason(String reason, String playerName)
 		{
@@ -1066,9 +702,9 @@ public final class BeingListener implements Listener{
 			String s = deathReasonList.get(index);
 			s = s.replace(Matcher.quoteReplacement("&p"), playerName);
 			s = ChatColor.translateAlternateColorCodes('&', s);
-			return s; 
+			return s;
 		}
-		
+
 		//for no-item-in-hand kill
 		public static String getDeathReason(String reason, String playerName, LivingEntity killerName)
 		{
@@ -1078,7 +714,7 @@ public final class BeingListener implements Listener{
 			s = s.replace(Matcher.quoteReplacement("&p"), playerName);
 			String mobname = killerName.getType().toString().toLowerCase();
 			mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
-			
+
 			//Some mob names are reported with underscores - need to modify the mobname so they
 			//don't actually appear unless intentionally named that way (eg. with nametag)
 			if (mobname.equals("Magma_cube") && killerName.getCustomName() == null)
@@ -1103,9 +739,9 @@ public final class BeingListener implements Listener{
 			}
 			s = s.replace("&z", mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);
-			return s; 
+			return s;
 		}
-		
+
 		//for special kills not by entity (eg. arrow from dispenser)
 		public static String getDeathReason(String reason, String playerName, String killerName)
 		{
@@ -1115,9 +751,9 @@ public final class BeingListener implements Listener{
 			s = s.replace(Matcher.quoteReplacement("&p"), playerName);
 			s = s.replace("&z", killerName);
 			s = ChatColor.translateAlternateColorCodes('&', s);
-			return s; 
+			return s;
 		}
-		
+
 		//should also handle item kills
 		public static String getDeathReason(String reason, String playerName, LivingEntity killerName, ItemStack item)
 		{
@@ -1145,7 +781,7 @@ public final class BeingListener implements Listener{
 				{
 					mobname = killerName.getCustomName();
 				}
-				
+
 				//Zombie Pigman exception - if the mobname is calculated to be Pig_zombie and it was not nametagged to be that
 				if (mobname.equals("Pig_zombie") && killerName.getCustomName() == null)
 				{
@@ -1156,14 +792,14 @@ public final class BeingListener implements Listener{
 					Player p = (Player)killerName;
 					mobname = p.getName();
 				}
-				
-				
+
+
 				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 				s = ChatColor.translateAlternateColorCodes('&', s);
-				
+
 				return s;
 			}
-			
+
 			else if (item.getType().equals(Material.RAW_FISH))
 			{
 				List<String> deathItemList = plugin.getConfig().getStringList("msg.rawfish");
@@ -1186,7 +822,7 @@ public final class BeingListener implements Listener{
 				{
 					mobname = killerName.getCustomName();
 				}
-				
+
 				//Zombie Pigman exception - if the mobname is calculated to be Pig_zombie and it was not nametagged to be that
 				if (mobname.equals("Pig_zombie") && killerName.getCustomName() == null)
 				{
@@ -1197,13 +833,13 @@ public final class BeingListener implements Listener{
 					Player p = (Player)killerName;
 					mobname = p.getName();
 				}
-				
+
 				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 				s = ChatColor.translateAlternateColorCodes('&', s);
-				
+
 				return s;
 			}
-			
+
 			else if (item.getType().equals(Material.GLOWSTONE) || item.getType().equals(Material.GLOWSTONE_DUST))
 			{
 				List<String> deathItemList = plugin.getConfig().getStringList("msg.glowstone");
@@ -1226,7 +862,7 @@ public final class BeingListener implements Listener{
 				{
 					mobname = killerName.getCustomName();
 				}
-				
+
 				//Zombie Pigman exception - if the mobname is calculated to be Pig_zombie and it was not nametagged to be that
 				if (mobname.equals("Pig_zombie") && killerName.getCustomName() == null)
 				{
@@ -1237,18 +873,18 @@ public final class BeingListener implements Listener{
 					Player p = (Player)killerName;
 					mobname = p.getName();
 				}
-				
+
 				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 				s = ChatColor.translateAlternateColorCodes('&', s);
-				
+
 				return s;
 			}
-			
+
 			//non-special kills
 			List<String> deathReasonList = plugin.getConfig().getStringList("msg." + reason + ".noitem");
 			int index = (int)(Math.random()*deathReasonList.size());
 			String s = deathReasonList.get(index);
-			
+
 			if (!item.getType().equals(Material.AIR))
 			{
 				List<String> deathItemList = plugin.getConfig().getStringList("msg." + reason + ".item");
@@ -1266,7 +902,7 @@ public final class BeingListener implements Listener{
 				}
 				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
 			}
-			
+
 			//System.out.println(s);
 			s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
 			String mobname = killerName.getType().toString().toLowerCase();
@@ -1275,24 +911,24 @@ public final class BeingListener implements Listener{
 			{
 				mobname = killerName.getCustomName();
 			}
-			
+
 			//Zombie Pigman exception - if the mobname is calculated to be Pig_zombie and it was not nametagged to be that
 			if (mobname.equals("Pig_zombie") && killerName.getCustomName() == null)
 			{
 				mobname = "Zombie Pigman";
 			}
-			
+
 			if (killerName instanceof Player)
 			{
 				Player p = (Player)killerName;
 				mobname = p.getName();
 			}
-			
+
 			s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);
 			return s;
 		}
-		
+
 		//related to sign drop on death
 		public static String getSignText1(String reason)
 		{
@@ -1301,12 +937,12 @@ public final class BeingListener implements Listener{
 			String s = deathReasonList.get(index);
 			return s;
 		}
-		
+
 		public static String getItemName(String material)
 		{
 			return material;
 		}
-		
+
 		//related to sign drop on death
 		//Below are methods used for death signs
 		public static void placeSignFromReason(String reason, Location signpoint, Player p)
@@ -1314,7 +950,7 @@ public final class BeingListener implements Listener{
 			if (plugin.getConfig().getBoolean("death-signs"))
 			{
 				if (signpoint != null)
-				{	
+				{
 					//Choose a sign text
 					//precondition: the number of lines under .1 and .2 are equal
 					List<String> deathLine1 = plugin.getConfig().getStringList("signtext." + reason + ".1");
@@ -1322,9 +958,9 @@ public final class BeingListener implements Listener{
 					int index = (int)(Math.random()*deathLine1.size());
 					String s1 = deathLine1.get(index);
 					String s2 = deathLine2.get(index);
-					
+
 					int direction = (int)(Math.random()*16); //16 possible directions, so possible data values are 0-15
-					
+
 					signpoint.getBlock().setType(Material.SIGN_POST);
 					signpoint.getBlock().setData((byte)direction);
 					Sign s = (Sign)signpoint.getBlock().getState();
@@ -1332,14 +968,14 @@ public final class BeingListener implements Listener{
 					s.setLine(1, s1);
 					s.setLine(2, s2);
 					s.setLine(3, getGreenDate());
-					
-					s.update();	
+
+					s.update();
 				}
 			}
 			else
 				return;
 		}
-		
+
 		//related to sign drop on death - this would have been placed on the sign
 		//Gets the date and time and reports that in green: MM-DD HH:MM
 		public static String getGreenDate()
@@ -1371,7 +1007,27 @@ public final class BeingListener implements Listener{
 			}
 			return ChatColor.GREEN + m + "-" + d + " " + h + ":" + i;
 		}
-		
-		
+
+		/**
+		 * If the plugin is configured to send custom death messages, then
+		 * update the death message in the specified event.
+		 *
+		 * Otherwise, simply log the death message.  This method is common code
+		 * factored out of {@link BeingListener#onPlayerDeath(PlayerDeathEvent)}.
+		 *
+		 * @param event the PlayerDeathEvent.
+		 * @param message the custom formatted death message.
+		 */
+		protected void dispatchDeathMessage(PlayerDeathEvent event, String message)
+		{
+			if (plugin.getConfig().getBoolean("death-msgs"))
+			{
+				event.setDeathMessage(message);
+			}
+			else
+			{
+				plugin.getLogger().info(message);
+			}
+		}
 }
 

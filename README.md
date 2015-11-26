@@ -45,8 +45,26 @@ These custom death messages are specified in the config file (config.yml) and, w
 - Death message (if it exists; if this does not appear, then a death message for that particular reason and killer is missing!)
 
 ===
+Building the Plugin
+===
+
+MoF is built using Apache Maven.
+
+MoF integrates with [ModMode](http://github.com/NerdNu/ModMode), if present.  In the absense of a NerdNu maven repository, you can install the ModMode plugin JAR as a local dependency, using the following command (substituting the correct path to the ModMode plugin JAR file):
+
+```
+mvn install:install-file -Dpackaging=jar -DgroupId=nu.nerd -DartifactId=modmode \
+    -Dversion=3.5.0 -Dfile=/path/to/ModMode/target/ModMode-3.5.0.jar
+```
+
+You can then build MoF by running `mvn`.
+
+===
 Changelog
 ===
+10.5:
+   - Added Maven build.
+
 10.4: 
    - Fixed brick dropping.  
    - Plugin now catches dispenser potion kills and Wither skull kills.

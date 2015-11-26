@@ -1,7 +1,7 @@
 MaskOfFutures
 =============
 
-This plugin contains three features of varying degrees of completeness originally prepared for Nerd.Nu's Halloween 2014 event.
+This plugin contains four features of varying degrees of completeness originally prepared for Nerd.Nu's Halloween 2014 event.
 
 - Death signs (incomplete)
 - Brick dropping from wither sounds

@@ -1,6 +1,6 @@
 name: MaskOfFutures
 main: com.gmail.buzziespy.MaskOfFutures.MaskOfFutures
-version: 0.10.4
+version: 0.10.5
 softdepend: [ModMode]
 
 commands:

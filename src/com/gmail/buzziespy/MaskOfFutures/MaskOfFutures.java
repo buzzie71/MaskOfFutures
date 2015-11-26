@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.SpawnEgg;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -81,6 +82,10 @@ public final class MaskOfFutures extends JavaPlugin{
 					{
 						h.setOwner(getServer().getOfflinePlayer(args[0]));
 					}
+					if (!h.isAdult())
+					{
+						h.setAdult();
+					}
 					//h.setMaxHealth(22.5);
 					//h.setJumpStrength(0.7);
 					//how do I set top speed of a horse?
@@ -116,6 +121,10 @@ public final class MaskOfFutures extends JavaPlugin{
 				else if (args.length == 1)
 				{
 					h.setOwner(getServer().getOfflinePlayer(args[0]));
+				}
+				if (!h.isAdult())
+				{
+					h.setAdult();
 				}
 				//h.setMaxHealth(22.5);
 				//h.setJumpStrength(0.7);
@@ -245,6 +254,33 @@ public final class MaskOfFutures extends JavaPlugin{
 			}
 			return true;
 		}
+		
+		//special horse spawn eggs - when used, plugin will detect it and spawn the undead horse
+		//WIP?  at any rate it doesn't work right now
+		/*else if (cmd.getName().equals("zhegg"))
+		{
+			if (sender instanceof Player)
+			{
+				//TODO: Pull this lore from config
+				ItemStack i = new ItemStack(Material.MONSTER_EGG, 1);
+				i.setDurability((short)100);
+				ItemMeta ii = i.getItemMeta();
+				List<String> egglore = new ArrayList<String>();
+				egglore.add(ChatColor.GREEN + "" + ChatColor.ITALIC + "Zombie Horse");
+				ii.setLore(egglore);
+				i.setItemMeta(ii);
+				
+				Player p = (Player)sender;
+				p.getWorld().dropItem(p.getLocation(), i);
+			}
+			else if (sender instanceof ConsoleCommandSender) //doesn't take command blocks into account
+			{
+				//must take one argument, the player name
+				sender.sendMessage("You must be in game to run this command.");
+			}
+			
+			return true;
+		}*/
 		
 		/* This is commented out since /wear will be enabled with CH
 		else if (cmd.getName().equals("hat"))

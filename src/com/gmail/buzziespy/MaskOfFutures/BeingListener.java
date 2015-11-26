@@ -112,8 +112,7 @@ public final class BeingListener implements Listener{
 			//save copy
 			plugin.saveDefaultConfig();
 		}
-		
-		
+				
 		@EventHandler
 		public void onWitherExplode(EntityExplodeEvent e)
 		{
@@ -179,11 +178,12 @@ public final class BeingListener implements Listener{
 		}
 		
 		//related to sign drop on death
+		//removed - signs with last line starting with &a do not drop themselves, unintended
 		@EventHandler
 		public void onSignBreak(BlockBreakEvent e)
 		{
 			//checking for signs attached to floor for now since death signs are by code sign posts (see onPlayerDeath())
-			if (e.getBlock().getType().equals(Material.SIGN_POST))
+			/*if (e.getBlock().getType().equals(Material.SIGN_POST))
 			{
 				Sign s = (Sign)e.getBlock().getState();
 				if (s.getLine(3).startsWith("&a"))
@@ -191,7 +191,7 @@ public final class BeingListener implements Listener{
 					e.setCancelled(true);
 					e.getBlock().setType(Material.AIR);
 				}
-			}
+			}*/
 		}
 		
 		//for undead horse taming
@@ -305,12 +305,12 @@ public final class BeingListener implements Listener{
 			//Handle zapping by TestPlugin (personal project, not a nerd plugin) first
 			if (victim.hasMetadata("TestPlugin.lightningKill"))
 			{
-				//e.setMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " was zapped by " + ChatColor.RED + victim.getMetadata("TestPlugin.lightningKill").get(0).asString() + ChatColor.DARK_AQUA);
+				//e.setDeathMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " was zapped by " + ChatColor.RED + victim.getMetadata("TestPlugin.lightningKill").get(0).asString() + ChatColor.DARK_AQUA);
 			}
 			//Handle death by drinking in MoreBeverages (personal project, not a nerd plugin)
 			else if (victim.hasMetadata("MoreBeverages.drunk"))
 			{
-				//e.setMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " had a bit too much to drink");
+				//e.setDeathMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " had a bit too much to drink");
 			}
 			
 			else if (victim.getLastDamageCause() instanceof EntityDamageByEntityEvent)

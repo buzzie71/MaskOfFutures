@@ -47,6 +47,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Enderman;
@@ -69,6 +70,7 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.Spider;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Witch;
 import org.bukkit.entity.Wither;
@@ -618,6 +620,34 @@ public final class BeingListener implements Listener{
 					{
 						dispatchDeathMessage(e, getDeathReason("pearl", e.getEntity().getName()));
 					}
+					//TNT kills (eg. in desert temples)
+					else if (ee.getDamager() instanceof TNTPrimed)
+					{
+						//TNTPrimed t = (TNTPrimed) ee.getDamager();
+						//Entity eee = t.getSource();
+						//DEBUG
+						//if (eee != null)
+						//{
+						//	plugin.getServer().getLogger().info("TNT Entity source: " + eee.getName());
+						//}
+						//else
+						//{
+						//	plugin.getServer().getLogger().info("TNT Entity source: null");
+						//}
+						//if (eee != null) //if players 
+						//{
+						//	dispatchDeathMessage(e, getDeathReason("tnt.entity", e.getEntity().getName(), (LivingEntity)eee));
+						//}
+						//else
+						//{
+							dispatchDeathMessage(e, getDeathReason("tnt.noentity", e.getEntity().getName()));
+						//}
+					}
+					//Ender Crystal kills
+					else if (ee.getDamager() instanceof EnderCrystal)
+					{
+							dispatchDeathMessage(e, getDeathReason("endercrystal", e.getEntity().getName()));
+					}
 				}
 			}
 			else //handle all non-entity-related deaths here
@@ -643,6 +673,10 @@ public final class BeingListener implements Listener{
 				//{
 				//	plugin.getLogger()info(getDeathReason( ;//e.setMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " was zapped by Lightning");
 				//}
+				else if (lastHit.equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION)) //eg. bed explosion in Nether/End
+				{
+					dispatchDeathMessage(e, getDeathReason("bed", e.getEntity().getName()));
+				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FALLING_BLOCK))
 				{
 					dispatchDeathMessage(e, getDeathReason("anvil", e.getEntity().getName()));
@@ -689,7 +723,7 @@ public final class BeingListener implements Listener{
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
 				{
-					// Not currently handled.
+					// Not currently handled - this fires on kill by Ender Crystal; this is handled with other entity kills above
 				}
 			}
 		}

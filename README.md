@@ -83,6 +83,11 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+10.6:
+   - Explosion Update: Plugin now catches kills by TNT, kills by beds outside the Overworld, and kills by Ender Crystals.  Existing versions of the plugin require addition of the following keys to config.yml to display these death messsages: msg.tnt, msg.bed, msg.endercrystal
+   - This is intended to be the last update for Minecraft version 1.8.8.  
+   - This version was compiled using Spigot-1.8.8-R0.1-SNAPSHOT.jar; as such, its behavior is undefined for Minecraft version 1.9.  However, preliminary testing suggests that the plugin may still function as is.
+
 10.5:
    - Added Maven build.
    - Expanded README.md (note: undead horse spawning and taming is part of the plugin but was previously not mentioned in the README).

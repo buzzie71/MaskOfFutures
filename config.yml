@@ -145,6 +145,15 @@ msg:
       
    pearl:
       - "&e&p&3 overzealously pearled into the ground"
+      
+   tnt:
+      entity:
+         - "&e&p&3 was blown up by &eTNT&3"
+      noentity:
+         - "&e&p&3 was blown up by &eTNT&3 set off by &e&z&3"
+   
+   bed:
+      - "&e&p&3 was blown up by &eBed&3"
          
    fall:
       - "&e&p &3fell from a high place"
@@ -189,6 +198,9 @@ msg:
       
    anvil:
       - "&e&p &3was squashed by a falling &eAnvil&3"
+      
+   endercrystal:
+      - "&e&p&3 was blown up by &eEnder Crystal&3"
       
    feather:
       - "&e&p &3was tickled to death by &e&z&3 wielding &i"

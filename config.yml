@@ -48,7 +48,7 @@ msg:
       item:
          - "with &i"
       noitem:
-         - "&e&p &3was slain by &e&z&3"
+         - "&e&p &3was slain by &e&z&3&w"
          
    skeleton:
       item:
@@ -143,6 +143,9 @@ msg:
    enderdragon:
       - "&e&p&3 was slain by &e&z&3"
       
+   shulker:
+      - "&e&p&3 was slain by &e&z&3"
+      
    pearl:
       - "&e&p&3 overzealously pearled into the ground"
       
@@ -151,6 +154,12 @@ msg:
          - "&e&p&3 was blown up by &eTNT&3"
       noentity:
          - "&e&p&3 was blown up by &eTNT&3 set off by &e&z&3"
+         
+   cloud:
+      player:
+         - "&e&p&3 was killed by &e&z&3 using magic"
+      dispenser:
+         - "&e&p&3 was killed by magic swirls from &e&z&3"
    
    bed:
       - "&e&p&3 was blown up by &eBed&3"

@@ -90,6 +90,10 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.10.7.1:
+   - Fixed default config's TNT death message labeling - the no-entity variant no longer tries futilely to report the entity responsible for igniting TNT (&z) in the death message.
+   - Note that the no-entity variant is currently the default for deaths due to TNT - the entity variants are not used at the moment.
+
 0.10.7:
    - Readme updated to contain version numbers that match what is given in the plugin's plugin.yml.
    - Plugin now catches kills by shulkers, kills by lingering potion clouds, and kills by gliding into a wall with elytra.  Existing versions of the plugin require addition of the following keys to config.yml to display these death messages: msg.shulker, msg.cloud, msg.crash

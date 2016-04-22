@@ -51,6 +51,13 @@ These custom death messages are specified in the config file (config.yml) and, w
 - Last entity to deal killing blow to player (if killed by entity such as a mob)
 - Death message (if it exists; if this does not appear, then a death message for that particular reason and killer is missing!)
 
+The configuration supports the use of color codes with a & prefix.  In addition to the Minecraft formatting codes, other codes are used to specify different strings:
+
+`&p` denotes the name of the killed player.
+`&z` denotes the name of the killing mob.  If the mob does not have a custom name, the name of the mob type is used instead.
+`&i` denotes the name of the item in the killing mob's hand at the time of the kill.  If the item does not have a custom name (that is, not named on an anvil or through plugins), then the item type as listed in the Bukkit API's Material enum is used instead.  (This is used in the with-item phrase contained in msg.mobtype.item, which is not included in the death message unless the killing mob is holding an item.  The behavior of using this code in the main death message when the mob is not holding an item is undefined.)
+`&w` denotes a space concatenated in front of the with-item phrase given in msg.mobtype.item.  This can be inserted in death messages for mobs that can kill with an item (given in msg.mobtype.noitem) to specify where this phrase goes in the message.  Such a death message will append the with-item phrase at the end of the given death message if the `&w` code is missing.
+
 ===
 Undead horse spawning and taming
 ===
@@ -83,16 +90,23 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
-10.6:
+0.10.7:
+   - Readme updated to contain version numbers that match what is given in the plugin's plugin.yml.
+   - Plugin now catches kills by shulkers, kills by lingering potion clouds, and kills by gliding into a wall with elytra.  Existing versions of the plugin require addition of the following keys to config.yml to display these death messages: msg.shulker, msg.cloud, msg.crash
+   - The location of the with-item phrase can now be specified with the code `&w` for death messages that can display the killing mob's item info.
+   - This version was compiled using Spigot-1.9-R0.1-SNAPSHOT.jar, the most recent available from Spigot on April 19, 2016.
+   - This version contains debugging code for kills by TNT that will report in console the source of the primed TNT that kills a player as well as the vanilla death message for the death instance.  This is intended to pave the way for TNT death messages that contain information about the entity that set off the TNT.  For now, since the TNT custom death messages do not support inclusion of this information, the vanilla death message is outputted in the console.  To prevent the plugin from outputting this, lines 652 to 659 and line 668 in BeingListener.java should be commented out.
+
+0.10.6:
    - Explosion Update: Plugin now catches kills by TNT, kills by beds outside the Overworld, and kills by Ender Crystals.  Existing versions of the plugin require addition of the following keys to config.yml to display these death messsages: msg.tnt, msg.bed, msg.endercrystal
    - This is intended to be the last update for Minecraft version 1.8.8.  
    - This version was compiled using Spigot-1.8.8-R0.1-SNAPSHOT.jar; as such, its behavior is undefined for Minecraft version 1.9.  However, preliminary testing suggests that the plugin may still function as is.
 
-10.5:
+0.10.5:
    - Added Maven build.
    - Expanded README.md (note: undead horse spawning and taming is part of the plugin but was previously not mentioned in the README).
    - Undead horses are now forced to be adults on spawn-in.
 
-10.4: 
+0.10.4: 
    - Fixed brick dropping.  
    - Plugin now catches dispenser potion kills and Wither skull kills.

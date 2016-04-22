@@ -11,7 +11,7 @@ This plugin contains four features of varying degrees of completeness originally
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
 
-This plugin has been tested against Spigot-1.8.8-R01-SNAPSHOT.jar.
+This plugin has been compiled and tested against Spigot-1.9-R01-SNAPSHOT.jar.
 
 The plugin is named as a reference to the Kanohi Olisi, the Mask of Alternate Futures, worn by Karzahni in the BIONICLE mythos.
 

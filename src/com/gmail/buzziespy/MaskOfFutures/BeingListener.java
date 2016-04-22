@@ -43,6 +43,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.CaveSpider;
@@ -65,6 +66,8 @@ import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Shulker;
+import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
@@ -486,11 +489,26 @@ public final class BeingListener implements Listener{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("rabbit", e.getEntity().getName(), z));
 					}
-					//Rabbit kills
+					//Endermite kills
 					else if (ee.getDamager() instanceof Endermite)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("endermite", e.getEntity().getName(), z));
+					}
+					//Shulker kills
+					else if (ee.getDamager() instanceof ShulkerBullet)
+					{
+						//This method assumes that Shulkers are the sole shooter of their bullets
+						//if other mobs (eg. players) can fire these, the config organization may need
+						//to be reshuffled to distinguish between sources
+						ShulkerBullet tp = (ShulkerBullet)ee.getDamager();
+						ProjectileSource le = (ProjectileSource)tp.getShooter();
+						//plugin.getLogger().info("Projectile source: " + le.toString());
+						if (le instanceof Shulker)
+						{
+							Shulker w = (Shulker)le;
+							dispatchDeathMessage(e, getDeathReason("shulker", e.getEntity().getName(), w));
+						}
 					}
 					//Guardian kill
 					if (ee.getDamager() instanceof Guardian)
@@ -623,25 +641,58 @@ public final class BeingListener implements Listener{
 					//TNT kills (eg. in desert temples)
 					else if (ee.getDamager() instanceof TNTPrimed)
 					{
-						//TNTPrimed t = (TNTPrimed) ee.getDamager();
-						//Entity eee = t.getSource();
+						TNTPrimed t = (TNTPrimed) ee.getDamager();
+						Entity eee = t.getSource();
+						//TODO: get the entity that ignites the TNT that kills the player...somehow
+						//using getSource() on the TNTPrimed object returns null when I suicide with it
+						//however, getting a skeleton to shoot a flame arrow at a TNT block that kills me
+						//is in fact recognized by the server, who claims the skeleton is the igniter
+						//so does null only apply when the player who dies is also the igniter?
 						//DEBUG
-						//if (eee != null)
-						//{
-						//	plugin.getServer().getLogger().info("TNT Entity source: " + eee.getName());
-						//}
-						//else
-						//{
-						//	plugin.getServer().getLogger().info("TNT Entity source: null");
-						//}
+						if (eee != null)
+						{
+							plugin.getServer().getLogger().info("TNT Entity source: " + eee);
+						}
+						else
+						{
+							plugin.getServer().getLogger().info("TNT Entity source: null");
+						}
 						//if (eee != null) //if players 
 						//{
 						//	dispatchDeathMessage(e, getDeathReason("tnt.entity", e.getEntity().getName(), (LivingEntity)eee));
 						//}
 						//else
 						//{
+							//currently unable to get the entity that set off the killing TNT,
+							//so print the vanilla death message in console instead
+							plugin.getServer().getLogger().info("TNT vanilla death message is: " + e.getDeathMessage());
 							dispatchDeathMessage(e, getDeathReason("tnt.noentity", e.getEntity().getName()));
 						//}
+					}
+					//Lingering potion of harming kills
+					else if (ee.getDamager() instanceof AreaEffectCloud)
+					{
+						AreaEffectCloud t = (AreaEffectCloud) ee.getDamager();
+						ProjectileSource eee = t.getSource();
+						//DEBUG
+						//if (eee != null)
+						//{
+						//	plugin.getServer().getLogger().info("Cloud source: " + eee.toString());
+						//}
+						//else
+						//{
+						//	plugin.getServer().getLogger().info("Cloud source: null");
+						//}
+						//at the moment only players and dispensers can shoot lingering potions
+						if (eee instanceof Player) //if players 
+						{
+							Player p = (Player)eee;
+							dispatchDeathMessage(e, getDeathReason("cloud.player", e.getEntity().getName(), p));
+						}
+						else if (eee instanceof BlockProjectileSource) //dispenser
+						{
+							dispatchDeathMessage(e, getDeathReason("cloud.dispenser", e.getEntity().getName(), "Dispenser"));
+						}
 					}
 					//Ender Crystal kills
 					else if (ee.getDamager() instanceof EnderCrystal)
@@ -721,6 +772,10 @@ public final class BeingListener implements Listener{
 				{
 					dispatchDeathMessage(e, getDeathReason("magic", e.getEntity().getName()));
 				}
+				else if (lastHit.equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL))
+				{
+					dispatchDeathMessage(e, getDeathReason("crash", e.getEntity().getName()));
+				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
 				{
 					// Not currently handled - this fires on kill by Ender Crystal; this is handled with other entity kills above
@@ -770,6 +825,11 @@ public final class BeingListener implements Listener{
 			if (killerName.getCustomName() != null)
 			{
 				mobname = killerName.getCustomName();
+			}
+			if (killerName instanceof Player)  //Player exception, since getCustomName() returns null for player
+			{
+				Player p = (Player)killerName;
+				mobname = p.getName();
 			}
 			s = s.replace("&z", mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);
@@ -923,8 +983,18 @@ public final class BeingListener implements Listener{
 			{
 				List<String> deathItemList = plugin.getConfig().getStringList("msg." + reason + ".item");
 				int index2 = (int)(Math.random()*deathItemList.size());
-				String s2 = deathItemList.get(index2);
-				s = s + " " + s2;
+				String s2 = " " + deathItemList.get(index2);
+				//use another tag to specify the with-item phrase, then replace that
+				//this replaces the old behavior of simply appending the with-item phrase at the end
+				//s = s + " " + s2;
+				if (s.contains("&w"))
+				{
+					s = s.replaceAll(Matcher.quoteReplacement("&w"), s2);
+				}
+				else //if with-item tag is not present, append at the end as before
+				{
+					s = s + s2;
+				}
 				String itemName = "a " + item.getType().toString().toLowerCase();
 				itemName = itemName.replace('_', ' ');
 				if (item.hasItemMeta())
@@ -935,6 +1005,10 @@ public final class BeingListener implements Listener{
 					}
 				}
 				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
+			}
+			else
+			{
+				s = s.replaceAll(Matcher.quoteReplacement("&w"), "");
 			}
 
 			//System.out.println(s);

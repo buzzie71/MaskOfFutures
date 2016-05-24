@@ -92,7 +92,7 @@ Changelog
 ===
 0.10.8:
    - Added an example message for death by gliding into a wall in the default config (msg.crash).
-   - Added handling of deaths by plugin or other miscellaneous methods (ie. the ones that result in the death message "<Player> died").  Existing versions of the plugin require the addition of the key msg.default to config.yml to display the custom death message.
+   - Added handling of deaths by plugin or other miscellaneous methods (ie. the ones that result in the death message "[Player] died").  Existing versions of the plugin require the addition of the key msg.default to config.yml to display the custom death message.
 
 0.10.7.1:
    - Fixed default config's TNT death message labeling - the no-entity variant no longer tries futilely to report the entity responsible for igniting TNT (&z) in the death message.

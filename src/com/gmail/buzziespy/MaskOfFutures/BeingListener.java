@@ -259,7 +259,15 @@ public final class BeingListener implements Listener{
 			//DEBUG:
 			if (!plugin.getConfig().getBoolean("death-msgs"))
 			{
-				plugin.getLogger().info("Death reason: " + e.getEntity().getLastDamageCause().getCause());
+				//if (e.getEntity().getLastDamageCause() != null)
+				if (!isDefaultDeath(e.getDeathMessage(), e.getEntity().getName()))
+				{
+					plugin.getLogger().info("Death reason: " + e.getEntity().getLastDamageCause().getCause());
+				}
+				else // default death message/death by plugin magic
+				{
+					plugin.getLogger().info("Death reason: default/killed by plugin");
+				}
 			}
 
 			//related to sign drop on death
@@ -307,6 +315,11 @@ public final class BeingListener implements Listener{
 			 */
 
 			Player victim = (Player)e.getEntity();
+			
+			//DEBUG
+			//plugin.getLogger().info("Original death message: " + e.getDeathMessage());
+			//plugin.getLogger().info("Predicted default message?: " + (e.getDeathMessage().equals(victim.getName() + " died")));
+			
 			//Handle zapping by TestPlugin (personal project, not a nerd plugin) first
 			if (victim.hasMetadata("TestPlugin.lightningKill"))
 			{
@@ -316,6 +329,14 @@ public final class BeingListener implements Listener{
 			else if (victim.hasMetadata("MoreBeverages.drunk"))
 			{
 				//e.setDeathMessage(ChatColor.GOLD + victim.getName() + ChatColor.DARK_AQUA + " had a bit too much to drink");
+			}
+			
+			//handle default death message
+			else if (isDefaultDeath(e.getDeathMessage(), e.getEntity().getName()))
+			{
+				//DEBUG
+				//plugin.getLogger().info("Player default death!");
+				dispatchDeathMessage(e, getDeathReason("default", e.getEntity().getName()));
 			}
 
 			else if (victim.getLastDamageCause() instanceof EntityDamageByEntityEvent)
@@ -1114,6 +1135,11 @@ public final class BeingListener implements Listener{
 				m = "0" + m;
 			}
 			return ChatColor.GREEN + m + "-" + d + " " + h + ":" + i;
+		}
+		
+		public static boolean isDefaultDeath(String dm, String name)
+		{
+			return dm.equals(name + " died");
 		}
 
 		/**

@@ -167,6 +167,9 @@ msg:
    fall:
       - "&e&p &3fell from a high place"
       
+   crash:
+      - "&e&p&3 experienced kinetic energy"
+      
    cactuspoke:
       - "&e&p &3was pricked to death"
       
@@ -219,3 +222,6 @@ msg:
       
    glowstone:
       - "&e&p&3 was killed by &e&z&3 with a bucket of puppies"
+      
+   default:
+      - "&e&p&3 died"

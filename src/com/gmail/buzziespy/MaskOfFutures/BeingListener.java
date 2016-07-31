@@ -65,16 +65,19 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.PolarBear;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Shulker;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Silverfish;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Skeleton.SkeletonType;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.Witch;
 import org.bukkit.entity.Wither;
 import org.bukkit.entity.WitherSkull;
@@ -214,6 +217,13 @@ public final class BeingListener implements Listener{
 						h.setTamed(true);
 						h.setOwner(e.getPlayer());
 						e.getPlayer().sendMessage(ChatColor.GREEN + "You have tamed this " + h.getVariant() + ".");
+						plugin.getServer().getPluginManager().callEvent(new EntityTameEvent(h, e.getPlayer()));
+					}
+					else if ((h.getVariant() == Horse.Variant.SKELETON_HORSE || h.getVariant() == Horse.Variant.UNDEAD_HORSE) && h.isTamed() == true && h.getOwner() == null && plugin.getConfig().getBoolean("tame-traps"))//skeleton/maybe zombie? horse exception - tamed but with no owner
+					{ //TODO: make this toggleable via config option
+						//h.setTamed(true);
+						h.setOwner(e.getPlayer());
+						e.getPlayer().sendMessage(ChatColor.GREEN + "You have tamed this trap " + h.getVariant() + ".");
 						plugin.getServer().getPluginManager().callEvent(new EntityTameEvent(h, e.getPlayer()));
 					}
 					else
@@ -516,6 +526,12 @@ public final class BeingListener implements Listener{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("endermite", e.getEntity().getName(), z));
 					}
+					//Polar Bear kills
+					else if (ee.getDamager() instanceof PolarBear)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("polarbear", e.getEntity().getName(), z));
+					}
 					//Shulker kills
 					else if (ee.getDamager() instanceof ShulkerBullet)
 					{
@@ -580,7 +596,20 @@ public final class BeingListener implements Listener{
 					{
 						//perhaps change this based on distance of shooter?
 						Arrow arrow = (Arrow)ee.getDamager();
-						if (arrow.getShooter() != null) //if an entity fired this arrow
+						/*if (arrow.getShooter() != null)
+						{
+							plugin.getLogger().info("Shooter: " + arrow.getShooter().toString());
+						}
+						else
+						{
+							plugin.getLogger().info("Shooter: null");
+						}*/
+						//1.9.2: dispenser exception
+						if (arrow.getShooter() instanceof BlockProjectileSource)
+						{
+							dispatchDeathMessage(e, getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
+						}
+						else//if an entity fired this arrow
 						{
 							//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
 							LivingEntity le = (LivingEntity)arrow.getShooter();
@@ -594,11 +623,7 @@ public final class BeingListener implements Listener{
 								dispatchDeathMessage(e, getDeathReason("arrow.player", e.getEntity().getName(), le, itemWeapon));
 							}
 						}
-						else
-						{
-							//most likely it came from a dispenser?
-							dispatchDeathMessage(e, getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
-						}
+						
 					}
 					else if (ee.getDamager() instanceof ThrownPotion)
 					{
@@ -662,33 +687,33 @@ public final class BeingListener implements Listener{
 					//TNT kills (eg. in desert temples)
 					else if (ee.getDamager() instanceof TNTPrimed)
 					{
-						TNTPrimed t = (TNTPrimed) ee.getDamager();
-						Entity eee = t.getSource();
+						//TNTPrimed t = (TNTPrimed) ee.getDamager();
+						//Entity eee = t.getSource();
 						//TODO: get the entity that ignites the TNT that kills the player...somehow
 						//using getSource() on the TNTPrimed object returns null when I suicide with it
 						//however, getting a skeleton to shoot a flame arrow at a TNT block that kills me
 						//is in fact recognized by the server, who claims the skeleton is the igniter
 						//so does null only apply when the player who dies is also the igniter?
 						//DEBUG
-						if (eee != null)
-						{
-							plugin.getServer().getLogger().info("TNT Entity source: " + eee);
-						}
-						else
-						{
-							plugin.getServer().getLogger().info("TNT Entity source: null");
-						}
-						//if (eee != null) //if players 
+						//if (eee != null)
 						//{
-						//	dispatchDeathMessage(e, getDeathReason("tnt.entity", e.getEntity().getName(), (LivingEntity)eee));
+						//	plugin.getServer().getLogger().info("TNT Entity source: " + eee);
 						//}
 						//else
 						//{
-							//currently unable to get the entity that set off the killing TNT,
-							//so print the vanilla death message in console instead
-							plugin.getServer().getLogger().info("TNT vanilla death message is: " + e.getDeathMessage());
-							dispatchDeathMessage(e, getDeathReason("tnt.noentity", e.getEntity().getName()));
+						//	plugin.getServer().getLogger().info("TNT Entity source: null");
 						//}
+						//use the custom methods to get the attacker name if it exists
+						String tntdeath = e.getDeathMessage();
+						if (isTNTAttackDeath(tntdeath, e.getEntity().getName()))
+						{
+							dispatchDeathMessage(e, getDeathReason("tnt.entity", e.getEntity().getName(), getTNTAttackerName(tntdeath, e.getEntity().getName())));
+						}
+						else //if not killed by someone else
+						{
+							dispatchDeathMessage(e, getDeathReason("tnt.noentity", e.getEntity().getName()));
+						}
+						//dispatchDeathMessage(e, getDeathReason("tnt.noentity", e.getEntity().getName()));
 					}
 					//Lingering potion of harming kills
 					else if (ee.getDamager() instanceof AreaEffectCloud)
@@ -797,6 +822,10 @@ public final class BeingListener implements Listener{
 				{
 					dispatchDeathMessage(e, getDeathReason("crash", e.getEntity().getName()));
 				}
+				else if (lastHit.equals(EntityDamageEvent.DamageCause.HOT_FLOOR))
+				{
+					dispatchDeathMessage(e, getDeathReason("hotfloor", e.getEntity().getName()));
+				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
 				{
 					// Not currently handled - this fires on kill by Ender Crystal; this is handled with other entity kills above
@@ -902,6 +931,15 @@ public final class BeingListener implements Listener{
 				{
 					mobname = "Zombie Pigman";
 				}
+				//husk exception
+				if (killerName.getType().equals(EntityType.ZOMBIE))
+				{
+					Zombie zz = (Zombie)killerName;
+					if (zz.getVillagerProfession().equals(Profession.HUSK))
+					{
+						mobname = "Husk";
+					}
+				}
 				if (killerName instanceof Player)  //Player exception, since getCustomName() returns null for player
 				{
 					Player p = (Player)killerName;
@@ -943,6 +981,15 @@ public final class BeingListener implements Listener{
 				{
 					mobname = "Zombie Pigman";
 				}
+				//husk exception
+				if (killerName.getType().equals(EntityType.ZOMBIE))
+				{
+					Zombie zz = (Zombie)killerName;
+					if (zz.getVillagerProfession().equals(Profession.HUSK))
+					{
+						mobname = "Husk";
+					}
+				}
 				if (killerName instanceof Player)
 				{
 					Player p = (Player)killerName;
@@ -982,6 +1029,15 @@ public final class BeingListener implements Listener{
 				if (mobname.equals("Pig_zombie") && killerName.getCustomName() == null)
 				{
 					mobname = "Zombie Pigman";
+				}
+				//husk exception
+				if (killerName.getType().equals(EntityType.ZOMBIE))
+				{
+					Zombie zz = (Zombie)killerName;
+					if (zz.getVillagerProfession().equals(Profession.HUSK))
+					{
+						mobname = "Husk";
+					}
 				}
 				if (killerName instanceof Player)
 				{
@@ -1046,6 +1102,26 @@ public final class BeingListener implements Listener{
 			{
 				mobname = "Zombie Pigman";
 			}
+			
+			//husk exception
+			if (killerName.getType().equals(EntityType.ZOMBIE))
+			{
+				Zombie zz = (Zombie)killerName;
+				if (zz.getVillagerProfession().equals(Profession.HUSK))
+				{
+					mobname = "Husk";
+				}
+			}
+			
+			//stray exception
+			/*if (killerName.getType().equals(EntityType.SKELETON))
+			{
+				Skeleton zz = (Skeleton)killerName;
+				if (zz.getSkeletonType().equals(SkeletonType.STRAY))
+				{
+					mobname = "Stray";
+				}
+			}*/
 
 			if (killerName instanceof Player)
 			{
@@ -1140,6 +1216,40 @@ public final class BeingListener implements Listener{
 		public static boolean isDefaultDeath(String dm, String name)
 		{
 			return dm.equals(name + " died");
+		}
+		
+		//check if a TNT death message string has an attacker name attached or not
+		//check this by finding what the first letter of the second word is:
+		//"<X> was blown up by <Y>" -> there was an attacker
+		//"<X> blew up" -> no attacker
+		public static boolean isTNTAttackDeath(String dm, String name)
+		{
+			//currently unable to get the player that set off the killing TNT,
+			//so print the vanilla death message in console instead
+			//in a future update, can look into parsing the vanilla death message for
+			//TNT kills made by someone other than the victim to get the killer for custom message
+			//plugin.getServer().getLogger().info("TNT vanilla death message is: " + dm);
+			//Expecting either the TNT death message will look like: "<X> blew up" or "<X> was blown up by <Y>"
+			//messages can be distinguished by what the second word in the sentence is
+			//plugin.getServer().getLogger().info("First letter of second word: " + dm.substring(name.length()+1, name.length()+2));
+			if (dm.substring(name.length()+1, name.length()+2).equals("w"))
+			{
+				return true;
+			}
+			return false;
+		}
+		
+		//get the name of the attacker if the TNT death message has attacker's name in it
+		//"<X> was blown up by <Y>"
+		public static String getTNTAttackerName(String dm, String name)
+		{
+			//make sure the string dm really contains the information sought
+			if (!isTNTAttackDeath(dm, name))
+			{
+				return "null";
+			}
+			//extract the name
+			return dm.substring(name.length()+18);
 		}
 
 		/**

@@ -165,7 +165,7 @@ public final class MaskOfFutures extends JavaPlugin{
 		{
 			if (args.length == 2)
 			{
-				if (args[0].equalsIgnoreCase("death-msgs"))
+				if (args[0].equalsIgnoreCase("death-msgs") || args[0].equalsIgnoreCase("death-messages"))
 				{
 					try
 					{
@@ -213,6 +213,30 @@ public final class MaskOfFutures extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "WARNING: That is not valid syntax!");
 					}
 				}
+				else if (args[0].equalsIgnoreCase("tame-traps"))
+				{
+					try
+					{
+						if (args[1].equalsIgnoreCase("true"))
+						{
+							//forcibly set config option for death messages to true, save config and implement new option
+							getConfig().set("tame-traps", true);
+							saveConfig();
+							sender.sendMessage(ChatColor.GREEN + "Trap taming set to true.  Players will be able to tame horses from skeleton traps.");
+						}
+						else if (args[1].equalsIgnoreCase("false"))
+						{
+							//forcibly set option to false
+							getConfig().set("tame-traps", false);
+							saveConfig();
+							sender.sendMessage(ChatColor.RED + "Trap taming set to false.  Players will be unable to tame horses from skeleton traps.");
+						}
+					}
+					catch (RuntimeException e)
+					{
+						sender.sendMessage(ChatColor.RED + "WARNING: That is not valid syntax!");
+					}
+				}
 			}
 			else if (args.length == 1)
 			{
@@ -227,6 +251,7 @@ public final class MaskOfFutures extends JavaPlugin{
 				sender.sendMessage(ChatColor.AQUA + "=====Mask of Futures=====");
 				sender.sendMessage(ChatColor.AQUA + "Brick dropping: " + getConfig().getBoolean("brick-dropping"));
 				sender.sendMessage(ChatColor.AQUA + "Death messages: " + getConfig().getBoolean("death-msgs"));
+				sender.sendMessage(ChatColor.AQUA + "Tame traps: " + getConfig().getBoolean("tame-traps"));
 			}
 			return true;
 		}

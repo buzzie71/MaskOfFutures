@@ -8,6 +8,8 @@ death-msgs: false
 
 brick-dropping: false
 
+tame-traps: false
+
 ### DEATH SIGNS CONFIG ###
 # Incomplete implementation, this can be ignored...?
 
@@ -146,6 +148,9 @@ msg:
    shulker:
       - "&e&p&3 was slain by &e&z&3"
       
+   polarbear:
+      - "&e&p&3 was slain by &e&z&3"
+      
    pearl:
       - "&e&p&3 overzealously pearled into the ground"
       
@@ -204,6 +209,9 @@ msg:
       
    void:
       - "&e&p &3fell into the void"
+      
+   hotfloor:
+      - "&e&p &3 discovered floor was lava, literally"
       
    magic:
       - "&e&p &3was magic'd dead by &eHerobrine&3"

@@ -21,7 +21,7 @@ MoF In-Game Config Changing
 
 `/mof` will bring up the current config states of brick dropping and custom death messages.  These can be altered in-game with:
 
-`/mof (brick-dropping|death-msgs) (true|false)`
+`/mof (brick-dropping|death-msgs|death-messages|tame-traps) (true|false)`
 
 Additionally, if the config is changed while the plugin is running, 
 
@@ -58,6 +58,10 @@ The configuration supports the use of color codes with a & prefix.  In addition 
 - `&i` denotes the name of the item in the killing mob's hand at the time of the kill.  If the item does not have a custom name (that is, not named on an anvil or through plugins), then the item type as listed in the Bukkit API's Material enum is used instead.  (This is used in the with-item phrase contained in msg.mobtype.item, which is not included in the death message unless the killing mob is holding an item.  The behavior of using this code in the main death message when the mob is not holding an item is undefined.)
 - `&w` denotes a space concatenated in front of the with-item phrase given in msg.mobtype.item.  This can be inserted in death messages for mobs that can kill with an item (given in msg.mobtype.noitem) to specify where this phrase goes in the message.  Such a death message will append the with-item phrase at the end of the given death message if the `&w` code is missing.
 
+When a player dies and custom death messages are on, the plugin will randomly choose one death message from the config's list for the applicable death reason, replace flags with names as described above, and display it.  
+
+If a player dies due to a mob that can visibly hold an item (eg. zombies, skeletons, players, witches), a random death message from the applicable death reason's `noitem` list is chosen.  If the killing mob is holding an item at time of player death, a random with-item phrase is chosen from the applicable death reason's `item` list and either appended to the end of the `noitem` death message or substituted in place of `&w` as described above.  The resulting death message is then displayed.
+
 ===
 Undead horse spawning and taming
 ===
@@ -90,6 +94,18 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.10.9:
+   - Fixed death messages from arrows fired from dispensers not appearing.
+   - Added a new config option: tame-traps.  Horse from a skeleton trap are considered by the game to be tamed but have no owner; the trap taming feature allows players to claim the trap horse as their own by forcibly setting the trap horse's owner to be them.  This is projected to be useful in conjunction with tame horse locking plugins such as CobraCorral; it is not anticipated to be as useful in their absence.  By default, this config option is set to false, but can be toggled both in-game and in console with `/mof tame-traps (true|false)`.  Existing versions of the plugin will require the key tame-traps to config.yml, which holds either a true or false value.
+   - The config options list visible when typing `/mof` has been updated to include the new tame-traps config option.
+   - The custom death messages config option can now be toggled with `/mof death-messages (true|false)` as well as the old `/mof death-msgs (true|false)`.
+   - Updated README to detail the mechanics behind displaying a death message.
+   - Added handling of deaths by polar bear and magma blocks.  Existing versions of the plugin require the addition of the keys msg.polarbear and msg.hotfloor to config.yml to display the custom death messages.
+   - Added code in Zombie death handling to specifically report kills by Husks as committed by Husk.
+   - Added TNT attacker reporting.  That is, if the vanilla TNT death message reports another player or entity ("Player was blown up by SomethingElse"), the custom death message will extract and report the attacker as well.  Existing versions of the plugin require the addition of the key msg.tnt.entity to config.yml to display this custom death message.
+   - This version was compiled using Spigot-1.10.2-R0.1-SNAPSHOT.jar, the most recent available from Spigot on July 13, 2016.
+
+
 0.10.8:
    - Added an example message for death by gliding into a wall in the default config (msg.crash).
    - Added handling of deaths by plugin or other miscellaneous methods (ie. the ones that result in the death message "[Player] died").  Existing versions of the plugin require the addition of the key msg.default to config.yml to display the custom death message.

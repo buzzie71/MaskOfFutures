@@ -220,7 +220,7 @@ public final class BeingListener implements Listener{
 						plugin.getServer().getPluginManager().callEvent(new EntityTameEvent(h, e.getPlayer()));
 					}
 					else if ((h.getVariant() == Horse.Variant.SKELETON_HORSE || h.getVariant() == Horse.Variant.UNDEAD_HORSE) && h.isTamed() == true && h.getOwner() == null && plugin.getConfig().getBoolean("tame-traps"))//skeleton/maybe zombie? horse exception - tamed but with no owner
-					{ //TODO: make this toggleable via config option
+					{
 						//h.setTamed(true);
 						h.setOwner(e.getPlayer());
 						e.getPlayer().sendMessage(ChatColor.GREEN + "You have tamed this trap " + h.getVariant() + ".");
@@ -689,7 +689,7 @@ public final class BeingListener implements Listener{
 					{
 						//TNTPrimed t = (TNTPrimed) ee.getDamager();
 						//Entity eee = t.getSource();
-						//TODO: get the entity that ignites the TNT that kills the player...somehow
+						//get the entity that ignites the TNT that kills the player...somehow
 						//using getSource() on the TNTPrimed object returns null when I suicide with it
 						//however, getting a skeleton to shoot a flame arrow at a TNT block that kills me
 						//is in fact recognized by the server, who claims the skeleton is the igniter
@@ -871,6 +871,10 @@ public final class BeingListener implements Listener{
 			else if (mobname.equals("Ender_dragon") && killerName.getCustomName() == null)
 			{
 				mobname = "Ender Dragon";
+			}
+			else if (mobname.equals("Polar_bear") && killerName.getCustomName() == null)
+			{
+				mobname = "Polar Bear";
 			}
 			if (killerName.getCustomName() != null)
 			{
@@ -1249,7 +1253,7 @@ public final class BeingListener implements Listener{
 				return "null";
 			}
 			//extract the name
-			return dm.substring(name.length()+18);
+			return dm.substring(name.length()+17);
 		}
 
 		/**

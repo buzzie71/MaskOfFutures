@@ -94,6 +94,10 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.10.9.1
+   - Fixed polar bear death messages being reported as committed by "Polar_bear".
+   - Fixed TNT attacker name reported with first letter truncated.
+
 0.10.9:
    - Fixed death messages from arrows fired from dispensers not appearing.
    - Added a new config option: tame-traps.  Horse from a skeleton trap are considered by the game to be tamed but have no owner; the trap taming feature allows players to claim the trap horse as their own by forcibly setting the trap horse's owner to be them.  This is projected to be useful in conjunction with tame horse locking plugins such as CobraCorral; it is not anticipated to be as useful in their absence.  By default, this config option is set to false, but can be toggled both in-game and in console with `/mof tame-traps (true|false)`.  Existing versions of the plugin will require the key tame-traps to config.yml, which holds either a true or false value.

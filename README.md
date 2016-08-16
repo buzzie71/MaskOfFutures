@@ -94,6 +94,9 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.10.9.2
+   - Fixed deaths by ender dragon breaths not being caught.  Existing versions of this plugin require the key msg.cloud.generic in config.yml to display the custom death message.
+
 0.10.9.1
    - Fixed polar bear death messages being reported as committed by "Polar_bear".
    - Fixed TNT attacker name reported with first letter truncated.

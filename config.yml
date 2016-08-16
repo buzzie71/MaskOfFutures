@@ -163,6 +163,8 @@ msg:
    cloud:
       player:
          - "&e&p&3 was killed by &e&z&3 using magic"
+      generic:
+         - "&e&p&3 was killed by magic"
       dispenser:
          - "&e&p&3 was killed by magic swirls from &e&z&3"
    

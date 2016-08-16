@@ -721,19 +721,28 @@ public final class BeingListener implements Listener{
 						AreaEffectCloud t = (AreaEffectCloud) ee.getDamager();
 						ProjectileSource eee = t.getSource();
 						//DEBUG
-						//if (eee != null)
-						//{
-						//	plugin.getServer().getLogger().info("Cloud source: " + eee.toString());
-						//}
-						//else
-						//{
-						//	plugin.getServer().getLogger().info("Cloud source: null");
-						//}
-						//at the moment only players and dispensers can shoot lingering potions
+						if (eee != null)
+						{
+							plugin.getServer().getLogger().info("Cloud source: " + eee.toString());
+						}
+						else
+						{
+							plugin.getServer().getLogger().info("Cloud source: null");
+						}
+						//at the moment only players and dispensers can shoot lingering potions...also dragons
 						if (eee instanceof Player) //if players 
 						{
 							Player p = (Player)eee;
 							dispatchDeathMessage(e, getDeathReason("cloud.player", e.getEntity().getName(), p));
+						}
+						else if (eee == null) //as of 1.10.2, Ender dragon breath pools are being reported with source of null
+						{
+							dispatchDeathMessage(e, getDeathReason("cloud.generic", e.getEntity().getName()));
+						}
+						else if (eee instanceof EnderDragon)
+						{
+							EnderDragon ed = (EnderDragon)eee;
+							dispatchDeathMessage(e, getDeathReason("cloud.dragon", e.getEntity().getName(), ed));
 						}
 						else if (eee instanceof BlockProjectileSource) //dispenser
 						{

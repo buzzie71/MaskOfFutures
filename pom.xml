@@ -4,7 +4,7 @@
 	<groupId>com.gmail.buzziespy</groupId>
 	<artifactId>MaskOfFutures</artifactId>
 	<name>MaskOfFutures</name>
-	<version>0.10.9.1</version>
+	<version>0.10.9.2</version>
 	<packaging>jar</packaging>
     <description>Custom death messages.</description>
     <url>https://github.com/buzzie71/MaskOfFutures</url>

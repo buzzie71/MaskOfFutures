@@ -64,6 +64,18 @@ msg:
       noitem:
          - "&e&p &3was slain by &e&z&3"
          
+   vex:
+      item:
+         - "with &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
+   vindicator:
+      item:
+         - "with &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
    arrow:
       skeleton:
          item:
@@ -142,6 +154,15 @@ msg:
    elderguardian:
       - "&e&p&3 was slain by &e&z&3"
       
+   evoker:
+      - "&e&p&3 was killed by &e&z&3 using magic"
+      
+   firework:
+      - "&e&p&3 went out with a bang"
+      
+   llama:
+      - "&e&p&3 was slain by &e&z&3"
+   
    enderdragon:
       - "&e&p&3 was slain by &e&z&3"
       

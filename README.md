@@ -94,6 +94,13 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.11
+   - Changed version numbering somewhat
+   - Added handling of deaths by llama, fireworks, evokers, vexes, and vindicators.  Existing versions of the plugin require the addition of the keys msg.llama, msg.firework, msg.evoker, msg.vex.item, msg.vex.noitem, msg.vindicator.item, msg.vindicator.noitem to display the custom death messages.  Note that the code addition makes certain assumptions about the mob loadouts found in the game (eg. vindicators don't ever wear Thorns armor); additional handling will be added in a future update if they are found to be false.
+   - Deaths due to Zombie Villagers, Strays, and Wither Skeletons are now reported as being committed by them rather than by their parent mob type (ie. Zombie or Skeleton).
+   - Fixed death messages involving an item always defaulting to the indefinite article 'a'.
+   - This version was compiled using Spigot-1.11.2-R0.1-SNAPSHOT.jar, the most recent available from Spigot on January 6, 2017.
+
 0.10.9.2
    - Fixed deaths by ender dragon breaths not being caught.  Existing versions of this plugin require the key msg.cloud.generic in config.yml to display the custom death message.
 

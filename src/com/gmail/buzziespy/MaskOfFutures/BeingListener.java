@@ -55,13 +55,17 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.EvokerFangs;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.Guardian;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.LargeFireball;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Llama;
+import org.bukkit.entity.LlamaSpit;
 import org.bukkit.entity.MagmaCube;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
@@ -77,7 +81,9 @@ import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Vex;
 import org.bukkit.entity.Villager.Profession;
+import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.Witch;
 import org.bukkit.entity.Wither;
 import org.bukkit.entity.WitherSkull;
@@ -749,6 +755,50 @@ public final class BeingListener implements Listener{
 							dispatchDeathMessage(e, getDeathReason("cloud.dispenser", e.getEntity().getName(), "Dispenser"));
 						}
 					}
+					//Vex kill
+					else if (ee.getDamager() instanceof Vex)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
+						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
+						{
+							dispatchDeathMessage(e, getDeathReason("vex", e.getEntity().getName(), z, itemWeapon));
+						}
+					}
+					//Vindicator kill - assuming it cannot wear thorns armor
+					else if (ee.getDamager() instanceof Vindicator)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
+						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
+						{
+							dispatchDeathMessage(e, getDeathReason("vindicator", e.getEntity().getName(), z, itemWeapon));
+						}
+					}
+					//Evoker kills - assuming it cannot hold items. Evokers kill by fangs.
+					else if (ee.getDamager() instanceof EvokerFangs)
+					{
+						EvokerFangs ef = (EvokerFangs)ee.getDamager();
+						LivingEntity z = (LivingEntity)ef.getOwner();
+						dispatchDeathMessage(e, getDeathReason("evoker", e.getEntity().getName(), z));
+					}
+					//Firework kills
+					else if (ee.getDamager() instanceof Firework)
+					{
+							dispatchDeathMessage(e, getDeathReason("firework", e.getEntity().getName()));
+					}
+					//Llama kill
+					else if (ee.getDamager() instanceof LlamaSpit)
+					{
+						LlamaSpit tp = (LlamaSpit)ee.getDamager();
+						ProjectileSource le = (ProjectileSource)tp.getShooter();
+						//plugin.getLogger().info("Projectile source: " + le.toString());
+						if (le instanceof Llama)
+						{
+							Llama w = (Llama)le;
+							dispatchDeathMessage(e, getDeathReason("llama", e.getEntity().getName(), w));
+						}
+					}
 					//Ender Crystal kills
 					else if (ee.getDamager() instanceof EnderCrystal)
 					{
@@ -885,6 +935,10 @@ public final class BeingListener implements Listener{
 			{
 				mobname = "Polar Bear";
 			}
+			else if (mobname.equals("Elder_guardian") && killerName.getCustomName() == null)
+			{
+				mobname = "Elder Guardian";
+			}
 			if (killerName.getCustomName() != null)
 			{
 				mobname = killerName.getCustomName();
@@ -944,14 +998,15 @@ public final class BeingListener implements Listener{
 				{
 					mobname = "Zombie Pigman";
 				}
-				//husk exception
-				if (killerName.getType().equals(EntityType.ZOMBIE))
+				//Zombie Villager exception
+				if (mobname.equals("Zombie_villager") && killerName.getCustomName() == null)
 				{
-					Zombie zz = (Zombie)killerName;
-					if (zz.getVillagerProfession().equals(Profession.HUSK))
-					{
-						mobname = "Husk";
-					}
+					mobname = "Zombie Villager";
+				}
+				//Wither Skeleton exception
+				if (mobname.equals("Wither_skeleton") && killerName.getCustomName() == null)
+				{
+					mobname = "Wither Skeleton";
 				}
 				if (killerName instanceof Player)  //Player exception, since getCustomName() returns null for player
 				{
@@ -994,14 +1049,15 @@ public final class BeingListener implements Listener{
 				{
 					mobname = "Zombie Pigman";
 				}
-				//husk exception
-				if (killerName.getType().equals(EntityType.ZOMBIE))
+				//Zombie Villager exception
+				if (mobname.equals("Zombie_villager") && killerName.getCustomName() == null)
 				{
-					Zombie zz = (Zombie)killerName;
-					if (zz.getVillagerProfession().equals(Profession.HUSK))
-					{
-						mobname = "Husk";
-					}
+					mobname = "Zombie Villager";
+				}
+				//Wither Skeleton exception
+				if (mobname.equals("Wither_skeleton") && killerName.getCustomName() == null)
+				{
+					mobname = "Wither Skeleton";
 				}
 				if (killerName instanceof Player)
 				{
@@ -1043,14 +1099,15 @@ public final class BeingListener implements Listener{
 				{
 					mobname = "Zombie Pigman";
 				}
-				//husk exception
-				if (killerName.getType().equals(EntityType.ZOMBIE))
+				//Zombie Villager exception
+				if (mobname.equals("Zombie_villager") && killerName.getCustomName() == null)
 				{
-					Zombie zz = (Zombie)killerName;
-					if (zz.getVillagerProfession().equals(Profession.HUSK))
-					{
-						mobname = "Husk";
-					}
+					mobname = "Zombie Villager";
+				}
+				//Wither Skeleton exception
+				if (mobname.equals("Wither_skeleton") && killerName.getCustomName() == null)
+				{
+					mobname = "Wither Skeleton";
 				}
 				if (killerName instanceof Player)
 				{
@@ -1085,7 +1142,7 @@ public final class BeingListener implements Listener{
 				{
 					s = s + s2;
 				}
-				String itemName = "a " + item.getType().toString().toLowerCase();
+				String itemName = getIndefiniteArticle(item.getType().toString().toLowerCase()) + item.getType().toString().toLowerCase();
 				itemName = itemName.replace('_', ' ');
 				if (item.hasItemMeta())
 				{
@@ -1115,26 +1172,16 @@ public final class BeingListener implements Listener{
 			{
 				mobname = "Zombie Pigman";
 			}
-			
-			//husk exception
-			if (killerName.getType().equals(EntityType.ZOMBIE))
+			//Zombie Villager exception
+			if (mobname.equals("Zombie_villager") && killerName.getCustomName() == null)
 			{
-				Zombie zz = (Zombie)killerName;
-				if (zz.getVillagerProfession().equals(Profession.HUSK))
-				{
-					mobname = "Husk";
-				}
+				mobname = "Zombie Villager";
 			}
-			
-			//stray exception
-			/*if (killerName.getType().equals(EntityType.SKELETON))
+			//Wither Skeleton exception
+			if (mobname.equals("Wither_skeleton") && killerName.getCustomName() == null)
 			{
-				Skeleton zz = (Skeleton)killerName;
-				if (zz.getSkeletonType().equals(SkeletonType.STRAY))
-				{
-					mobname = "Stray";
-				}
-			}*/
+				mobname = "Wither Skeleton";
+			}
 
 			if (killerName instanceof Player)
 			{
@@ -1263,6 +1310,23 @@ public final class BeingListener implements Listener{
 			}
 			//extract the name
 			return dm.substring(name.length()+17);
+		}
+		
+		//choose the correct indefinite article appended with a space
+		public static String getIndefiniteArticle(String s)
+		{
+			char c = s.charAt(0);
+			//this is a cheap way of coding the distinctions - exceptions are expected to be
+			//hardcoded in later if/when they are discovered
+			//NOTE: this will not be used for special item kills since the item used is known
+			if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')
+			{
+				return "an ";
+			}
+			else
+			{
+				return "a ";
+			}
 		}
 
 		/**

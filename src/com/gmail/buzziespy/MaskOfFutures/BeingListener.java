@@ -368,7 +368,7 @@ public final class BeingListener implements Listener{
 				if (ee.getDamager() instanceof Player)
 				{  //handle player kills here
 					LivingEntity z = (LivingEntity)ee.getDamager();
-					ItemStack itemWeapon = z.getEquipment().getItemInHand();
+					ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 					if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 					{
 					    dispatchDeathMessage(e, getDeathReason("player", e.getEntity().getName(), z, itemWeapon));
@@ -391,7 +391,7 @@ public final class BeingListener implements Listener{
 					{
 
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInHand();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
 							dispatchDeathMessage(e, getDeathReason("zombie", e.getEntity().getName(), z, itemWeapon));
@@ -409,7 +409,7 @@ public final class BeingListener implements Listener{
 					else if (ee.getDamager() instanceof Skeleton)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInHand();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
 							dispatchDeathMessage(e, getDeathReason("skeleton", e.getEntity().getName(), z, itemWeapon));
@@ -425,7 +425,7 @@ public final class BeingListener implements Listener{
 					else if (ee.getDamager() instanceof PigZombie)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInHand();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
 							dispatchDeathMessage(e, getDeathReason("pigzombie", e.getEntity().getName(), z, itemWeapon));
@@ -469,7 +469,7 @@ public final class BeingListener implements Listener{
 					else if (ee.getDamager() instanceof Witch)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInHand();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						dispatchDeathMessage(e, getDeathReason("witch", e.getEntity().getName(), z, itemWeapon));
 						placeSignFromReason("witch", signpoint, e.getEntity());
 					}
@@ -558,7 +558,7 @@ public final class BeingListener implements Listener{
 					{
 
 						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInHand();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
 						{
 							dispatchDeathMessage(e, getDeathReason("guardian", e.getEntity().getName(), z));
@@ -619,7 +619,7 @@ public final class BeingListener implements Listener{
 						{
 							//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
 							LivingEntity le = (LivingEntity)arrow.getShooter();
-							ItemStack itemWeapon = le.getEquipment().getItemInHand();
+							ItemStack itemWeapon = le.getEquipment().getItemInMainHand();
 							if (le instanceof Skeleton)
 							{
 								dispatchDeathMessage(e, getDeathReason("arrow.skeleton", e.getEntity().getName(), le, itemWeapon));
@@ -643,13 +643,13 @@ public final class BeingListener implements Listener{
 						if (le instanceof Witch)
 						{
 							Witch w = (Witch)le;
-							ItemStack itemWeapon = w.getEquipment().getItemInHand();
+							ItemStack itemWeapon = w.getEquipment().getItemInMainHand();
 							dispatchDeathMessage(e, getDeathReason("potion.witch", e.getEntity().getName(), w, itemWeapon));
 						}
 						else if (le instanceof Player)
 						{
 							Player p = (Player)le;
-							ItemStack itemWeapon = p.getEquipment().getItemInHand();
+							ItemStack itemWeapon = p.getEquipment().getItemInMainHand();
 							dispatchDeathMessage(e, getDeathReason("potion.player", e.getEntity().getName(), p, itemWeapon));
 						}
 						else if (le instanceof BlockProjectileSource) //ie. dispenser
@@ -1231,7 +1231,7 @@ public final class BeingListener implements Listener{
 					int direction = (int)(Math.random()*16); //16 possible directions, so possible data values are 0-15
 
 					signpoint.getBlock().setType(Material.SIGN_POST);
-					signpoint.getBlock().setData((byte)direction);
+					//signpoint.getBlock().setData((byte)direction);
 					Sign s = (Sign)signpoint.getBlock().getState();
 					s.setLine(0, p.getName());
 					s.setLine(1, s1);

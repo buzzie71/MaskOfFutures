@@ -256,3 +256,6 @@ msg:
       
    default:
       - "&e&p&3 died"
+      
+   cramming:
+      - "&e&p&3 was squished too much"

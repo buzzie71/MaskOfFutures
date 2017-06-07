@@ -889,6 +889,10 @@ public final class BeingListener implements Listener{
 				{
 					// Not currently handled - this fires on kill by Ender Crystal; this is handled with other entity kills above
 				}
+				else if (lastHit.equals(EntityDamageEvent.DamageCause.CRAMMING))
+				{
+					dispatchDeathMessage(e, getDeathReason("cramming", e.getEntity().getName()));
+				}
 			}
 		}
 

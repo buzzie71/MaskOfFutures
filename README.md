@@ -11,7 +11,7 @@ This plugin contains four features of varying degrees of completeness originally
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
 
-This plugin has been compiled and tested against Spigot-1.9-R01-SNAPSHOT.jar.
+This plugin has been compiled and tested against Spigot-1.12-R01-SNAPSHOT.jar.
 
 The plugin is named as a reference to the Kanohi Olisi, the Mask of Alternate Futures, worn by Karzahni in the BIONICLE mythos.
 
@@ -21,13 +21,17 @@ MoF In-Game Config Changing
 
 `/mof` will bring up the current config states of brick dropping and custom death messages.  These can be altered in-game with:
 
-`/mof (brick-dropping|death-msgs|death-messages|tame-traps) (true|false)`
+`/mof [brick-dropping|death-msgs|death-messages|tame-traps|log-vanilla-death] [true|false]`
 
-Additionally, if the config is changed while the plugin is running, 
+Additionally, if the config is changed while the plugin is running, or if config settings are to be reverted to the file,
 
 `/mof reload`
 
-will reload the config file.
+will reload the config file from disk.
+
+Config changes can be saved to file with
+
+`/mof save`
 
 These commands are intended to be reserved for server administrators.
 
@@ -63,6 +67,24 @@ When a player dies and custom death messages are on, the plugin will randomly ch
 If a player dies due to a mob that can visibly hold an item (eg. zombies, skeletons, players, witches), a random death message from the applicable death reason's `noitem` list is chosen.  If the killing mob is holding an item at time of player death, a random with-item phrase is chosen from the applicable death reason's `item` list and either appended to the end of the `noitem` death message or substituted in place of `&w` as described above.  The resulting death message is then displayed.
 
 ===
+Suppressing death messages
+===
+
+Players can suppress death messages in their own chat feed by running `/ignore-deaths`.  The same command will also allow death messages in the feed if it was previously suppressed.
+
+===
+Altering death messages in-game
+===
+
+There exist commands intended for server administrators to alter the death messages in the config while in-game, and can be accessed through `/mofmsg`.  These commands are recommended for users with a deeper understanding of the plugin.  Note that the subcategories used in this set of commands correspond to keys in the config file, though without the `msg.` prefix.
+
+   - `/mofmsg view [category]` will show a list of subcategories if they exist (eg. a query of `zombie` will show subcategories `item` and `noitem`).  Subcategories can be queried by appending them to categories after a period (eg. `zombie.noitem`).  Otherwise, the command will show a list of strings in that subcategory.  The actual key that is queried in the config is `msg.[category supplied in the command]`.
+   - `/mofmsg add [category] [death message]` will add the specified death message to the category.  This can only be done for string lists.
+   - `/mofmsg delete [category] [number]` will delete the string with that number from the list, as seen when querying it with `view`.  This can only be done for string lists.
+   - `/mofmsg addcat [category]` will add a new category of strings or overwrite an existing category, as well as insert a placeholder string in the resulting list.  Be sure to replace the placeholder!  Useful for adding new death message categories, eg. if a new death method is added to the game but not yet to the config.
+   - `/mofmsg delcat [category]` will delete the category.  The command will restore all the string lists in that category to its default values, if they exist in the default config.  Its effect on the parent keys of the string list is undefined, but they can be restored by using `addcat` to remake their place in the config.
+
+===
 Undead horse spawning and taming
 ===
 
@@ -94,6 +116,16 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.12
+   - Added handling of deaths by illusioner.  Existing versions of the plugin require the addition of the keys msg.arrow.illusioner.item and msg.arrow.illusioner.noitem.  Note that this addition makes the assumption that illusioners can't use melee weapons.
+   - Added personal muting of death messages until server restart.  Players can suppress death messages appearing in their chat feed until a server restart with the toggle command `/ignore-deaths`.  Death messages will be received again to the feed after running the same command.
+   - The version number of the plugin now appears in the `/mof` config menu for administrators.
+   - Added command for administrators to save the config to disk with `/mof save`.
+   - Added a new config option: `log-vanilla-death`.  This option toggles whether or not the vanilla death message is printed in console at time of player death, along with the custom death message.  This option does nothing if `death-messages` is set to false (ie. custom death messages are disabled).
+   - Added administrative tools to alter the custom death messages in the config from the game.  These can be accessed through `/mofmsg`.  Note that `addcat` and `delcat` behavior has not been fully characterized.  It is highly advised that periodic backups of the config are kept in case the config is irreversibly or inconveniently altered from in-game.
+   - This version was compiled using Spigot-1.12-R0.1-SNAPSHOT.jar, the most recent available from Spigot on July 8, 2017.
+   - Failed to remove a prophetic comment line from the top of MaskOfFutures.java.
+
 0.11
    - Changed version numbering somewhat
    - Added handling of deaths by llama, fireworks, evokers, vexes, and vindicators.  Existing versions of the plugin require the addition of the keys msg.llama, msg.firework, msg.evoker, msg.vex.item, msg.vex.noitem, msg.vindicator.item, msg.vindicator.noitem to display the custom death messages.  Note that the code addition makes certain assumptions about the mob loadouts found in the game (eg. vindicators don't ever wear Thorns armor); additional handling will be added in a future update if they are found to be false.

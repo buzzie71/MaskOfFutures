@@ -61,6 +61,7 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.Guardian;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.Illusioner;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.LargeFireball;
 import org.bukkit.entity.LivingEntity;
@@ -617,7 +618,6 @@ public final class BeingListener implements Listener{
 						}
 						else//if an entity fired this arrow
 						{
-							//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
 							LivingEntity le = (LivingEntity)arrow.getShooter();
 							ItemStack itemWeapon = le.getEquipment().getItemInMainHand();
 							if (le instanceof Skeleton)
@@ -627,6 +627,10 @@ public final class BeingListener implements Listener{
 							else if (le instanceof Player)
 							{
 								dispatchDeathMessage(e, getDeathReason("arrow.player", e.getEntity().getName(), le, itemWeapon));
+							}
+							else if (le instanceof Illusioner)
+							{
+								dispatchDeathMessage(e, getDeathReason("arrow.illusioner", e.getEntity().getName(), le, itemWeapon));
 							}
 						}
 						
@@ -1347,7 +1351,29 @@ public final class BeingListener implements Listener{
 		{
 			if (plugin.getConfig().getBoolean("death-msgs"))
 			{
-				event.setDeathMessage(message);
+				//event.setDeathMessage(message);
+				if (plugin.getConfig().getBoolean("log-vanilla-death"))
+				{
+					String vanillaMessage = event.getDeathMessage();
+					Bukkit.getLogger().info(vanillaMessage);
+				}
+				
+				//altered death message handling to be per-player
+				event.setDeathMessage("");
+				plugin.getLogger().info(message);
+				//first send the death message to console
+				
+				Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+				Player[] playerList = players.toArray(new Player[players.size()]);
+				
+				for (Player p: playerList)
+				{
+					if (!p.hasMetadata("MaskOfFutures.mutedeath"))
+					{
+						p.sendMessage(message);
+					}
+				}
+				
 			}
 			else
 			{

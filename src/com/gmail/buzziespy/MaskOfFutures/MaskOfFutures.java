@@ -1,6 +1,11 @@
 package com.gmail.buzziespy.MaskOfFutures;
 
+//IT WILL RETURN THROUGH PLAIN SIGHT
+
+import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import nu.nerd.modmode.ModMode;
@@ -55,10 +60,33 @@ public final class MaskOfFutures extends JavaPlugin{
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
 	
+		if (cmd.getName().equalsIgnoreCase("ignore-deaths"))
+		{
+			if (sender instanceof Player)
+			{
+				Player p = (Player)sender;
+				if (!p.hasMetadata("MaskOfFutures.mutedeath"))
+				{
+					p.setMetadata("MaskOfFutures.mutedeath", new FixedMetadataValue(this, "true"));
+					p.sendMessage(ChatColor.RED + "Death messages are now muted until the next restart.");
+				}
+				else
+				{
+					p.removeMetadata("MaskOfFutures.mutedeath", this);
+					p.sendMessage(ChatColor.GREEN + "Death messages will display as normal.");
+				}
+			}
+			else if (sender instanceof ConsoleCommandSender)
+			{
+				sender.sendMessage("You must be in game to run this command.");
+			}
+			return true;
+		}
+		
 		//zhorse and shorse both spawn in a zombie/skeleton horse tamed to someone specified
 		//NOTE: Currently both have a chance of spawning in foals - this is most likely undesirable for
 		//events.  Perhaps need to add something to ensure that the horse is never a foal.
-		if (cmd.getName().equals("zhorse"))
+		else if (cmd.getName().equals("zhorse"))
 		{
 			if (sender instanceof Player)
 			{
@@ -160,6 +188,176 @@ public final class MaskOfFutures extends JavaPlugin{
 				return true;
 			}
 		}
+		else if (cmd.getName().equals("mofmsg"))
+		{
+			if (args.length == 0 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
+			{
+				sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)");
+				displayDeathMessageList(sender);
+				return true;
+			}
+			else if (args.length == 1 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
+			{
+				//for commands with no arguments
+				if (args[0].equalsIgnoreCase("view"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg view [category]");
+					displayDeathMessageList(sender);
+				}
+				else if (args[0].equalsIgnoreCase("add"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg add [category] [message]\nUse /mofmsg to see list of permissible categories.");
+				}
+				else if (args[0].equalsIgnoreCase("delete"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg delete [category] [item number]\nUse /mofmsg to see list of permissible categories.");
+				}
+				else
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)\nUse /mofmsg to see list of permissible categories.");
+				}
+				return true;
+			}
+			else if (args.length == 2 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
+			{
+				if (args[0].equalsIgnoreCase("add")) //for instances of category specified but no message specified
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg add [category] [message]\nUse /mofmsg to see list of permissible categories.");
+				}
+				else if (args[0].equalsIgnoreCase("delete"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg delete [category] [item number]\nUse /mofmsg to see list of permissible categories.");
+				}
+				else if (args[0].equalsIgnoreCase("view"))
+				{
+					//DEBUG:
+					//getLogger().info("Config is list: " + getConfig().isList("msg." + args[1]));
+					//get category
+					if (getConfig().contains("msg." + args[1]))
+					{
+						if (getConfig().isList("msg." + args[1]))
+						{
+							ArrayList<String> deathmsglist = (ArrayList<String>)getConfig().getStringList("msg."+args[1]);
+							Iterator<String> it = deathmsglist.iterator();
+							int size = deathmsglist.size();
+							String keylist = args[1] + "\n======\n";
+							for (int i=0; i<size; i++)
+							{
+								keylist = keylist + (i+1) + ". " + it.next();
+								if (it.hasNext())
+								{
+									keylist = keylist + "\n";
+								}
+							}
+							sender.sendMessage(ChatColor.AQUA + keylist);
+						}
+						else
+						{
+							//TODO: need to separate out between which categories involve items and which don't
+							AbstractSet<String> deathmsglist = (AbstractSet<String>) getConfig().getConfigurationSection("msg." + args[1]).getKeys(false);
+							Iterator<String> it = deathmsglist.iterator();
+							String keylist = it.next(); //assumes there is always at least one key in the death messages config
+							while (it.hasNext())
+							{
+								keylist = keylist + ", " + it.next();
+							}
+							sender.sendMessage(ChatColor.AQUA + "Available categories for " + args[1] + ": " + keylist);
+						}
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "msg."+args[1]+" is not a valid config key");
+					}
+				}
+				else if (args[0].equalsIgnoreCase("addcat"))
+				{
+					getConfig().createSection("msg."+args[1]);
+					sender.sendMessage(ChatColor.GREEN + "Added " + "msg."+args[1] + " to config with placeholder message.");
+					List<String> defList = new LinkedList<String>();
+					defList.add("&e&p&3 was killed by &ean unknown lethal force. Want more clarity? Petition your local Padmin today!&3");
+					getConfig().set("msg."+args[1], defList);
+					getLogger().info("[MOF] " + sender.getName() + " added a new death message category at msg." + args[1] + " with placeholder message.");
+				}
+				else if (args[0].equalsIgnoreCase("delcat"))
+				{
+					//if (getConfig().isList("msg."+args[1]))
+					//{
+						getConfig().set("msg."+args[1], null);
+						sender.sendMessage(ChatColor.GREEN + "Deleted " + "msg."+args[1] + " from config.");
+						getLogger().info("[MOF] " + sender.getName() + " deleted the death message category at msg." + args[1]);
+					//}
+				}
+				else
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)\nUse /mofmsg to see list of permissible categories.");
+				}
+				return true;
+			}
+			else if (args.length > 2 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
+			{
+				if (args[0].equalsIgnoreCase("add"))
+				{
+					if (getConfig().contains("msg." + args[1]))
+					{
+						if (getConfig().isList("msg."+args[1]))
+						{
+							//takes in death message as argument
+							//synthesize the death message from the other args
+							String deathmsg = "";
+							for (int i=2; i<args.length; i++)
+							{
+								deathmsg = deathmsg + args[i] + " ";
+							}
+							deathmsg = deathmsg.substring(0, deathmsg.length()-1);
+							List<String> localMsgList = getConfig().getStringList("msg."+args[1]);
+							localMsgList.add(deathmsg);
+							getConfig().set("msg."+args[1], localMsgList);
+							sender.sendMessage(ChatColor.GREEN + "Added to " + "msg."+args[1] + ": " + deathmsg);
+							getLogger().info("[MOF] " + sender.getName() + " added a new death message to msg." + args[1] + ": \"" + deathmsg + "\"");
+						}
+						else
+						{
+							sender.sendMessage(ChatColor.RED + "That is not a permissible death message category to add to.");
+						}
+						
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "msg."+args[1]+" is not a valid config key");
+					}
+				}
+				else if (args[0].equalsIgnoreCase("delete"))
+				{
+					if (getConfig().contains("msg." + args[1]))
+					{
+						if (getConfig().isList("msg."+args[1]))
+						{
+							//takes in number of the death message on the list as an argument
+							//synthesize the death message from the other args
+							List<String> localMsgList = getConfig().getStringList("msg."+args[1]);
+							String deletedMsg = localMsgList.get(Integer.parseInt(args[2])-1);
+							localMsgList.remove(Integer.parseInt(args[2])-1);
+							getConfig().set("msg."+args[1], localMsgList);
+							sender.sendMessage(ChatColor.RED + "Removed from " + "msg."+args[1] + ": " + deletedMsg);
+							getLogger().info("[MOF] " + sender.getName() + " deleted a death message from msg." + args[1] + ": \"" + deletedMsg + "\"");
+						}
+						else
+						{
+							sender.sendMessage(ChatColor.RED + "That is not a permissible death message category to delete from.");
+						}
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "msg."+args[1]+" is not a valid config key");
+					}
+				}
+				else
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)\nUse /mofmsg to see list of permissible categories.");
+				}
+				return true;
+			}
+		}
 		//Commands related to main feature config display and modification (brick dropping, death messages)
 		else if (cmd.getName().equals("mof"))
 		{
@@ -237,6 +435,30 @@ public final class MaskOfFutures extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "WARNING: That is not valid syntax!");
 					}
 				}
+				else if (args[0].equalsIgnoreCase("log-vanilla-death"))
+				{
+					try
+					{
+						if (args[1].equalsIgnoreCase("true"))
+						{
+							//forcibly set config option for death messages to true, save config and implement new option
+							getConfig().set("log-vanilla-death", true);
+							saveConfig();
+							sender.sendMessage(ChatColor.GREEN + "Vanilla death logging set to true.  The vanilla death message will be printed in console.");
+						}
+						else if (args[1].equalsIgnoreCase("false"))
+						{
+							//forcibly set option to false
+							getConfig().set("log-vanilla-death", false);
+							saveConfig();
+							sender.sendMessage(ChatColor.RED + "Vanilla death logging set to false.  The vanilla death message will not be printed in console.");
+						}
+					}
+					catch (RuntimeException e)
+					{
+						sender.sendMessage(ChatColor.RED + "WARNING: That is not valid syntax!");
+					}
+				}
 			}
 			else if (args.length == 1)
 			{
@@ -245,13 +467,20 @@ public final class MaskOfFutures extends JavaPlugin{
 					reloadConfig();
 					sender.sendMessage(ChatColor.AQUA + "MaskOfFutures config reloaded!");
 				}
+				else if (args[0].equalsIgnoreCase("save"))
+				{
+					saveConfig();
+					sender.sendMessage(ChatColor.AQUA + "MaskOfFutures config saved!");
+				}
 			}
 			else 
 			{
-				sender.sendMessage(ChatColor.AQUA + "=====Mask of Futures=====");
+				sender.sendMessage(ChatColor.AQUA + "https://github.com/buzzie71/MaskOfFutures/blob/master/README.md");
+				sender.sendMessage(ChatColor.AQUA + "=====Mask of Futures, v"+ getDescription().getVersion() +"=====");
 				sender.sendMessage(ChatColor.AQUA + "Brick dropping: " + getConfig().getBoolean("brick-dropping"));
 				sender.sendMessage(ChatColor.AQUA + "Death messages: " + getConfig().getBoolean("death-msgs"));
 				sender.sendMessage(ChatColor.AQUA + "Tame traps: " + getConfig().getBoolean("tame-traps"));
+				sender.sendMessage(ChatColor.AQUA + "Log vanilla death: " + getConfig().getBoolean("log-vanilla-death"));
 			}
 			return true;
 		}
@@ -331,5 +560,16 @@ public final class MaskOfFutures extends JavaPlugin{
 		return false;
 	}
 	
+	public void displayDeathMessageList(CommandSender sender)
+	{
+		AbstractSet<String> deathmsglist = (AbstractSet<String>) getConfig().getConfigurationSection("msg").getKeys(false);
+		Iterator<String> it = deathmsglist.iterator();
+		String keylist = it.next(); //assumes there is always at least one key in the death messages config
+		while (it.hasNext())
+		{
+			keylist = keylist + ", " + it.next();
+		}
+		sender.sendMessage(ChatColor.AQUA + "Available death message categories: " + keylist);
+	}
 	
 }

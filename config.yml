@@ -10,6 +10,8 @@ brick-dropping: false
 
 tame-traps: false
 
+log-vanilla-death: true
+
 ### DEATH SIGNS CONFIG ###
 # Incomplete implementation, this can be ignored...?
 
@@ -89,6 +91,11 @@ msg:
             - "&e&p &3was shot by &e&z&3"
       dispenser:
          - "&e&p &3was shot by &eHerobrine&3"
+      illusioner:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p&3 was shot by &e&z&3"
          
    fireball:
       ghast:

@@ -1,9 +1,14 @@
 name: MaskOfFutures
 main: com.gmail.buzziespy.MaskOfFutures.MaskOfFutures
-version: 0.11
+version: 0.12
 softdepend: [ModMode]
 
 commands:
+   ignore-deaths:
+      description: Mutes incoming death messages
+      usage: /ignore-deaths
+      permission:
+      permission-message:
    zhorse:
       description: Spawns an undead horse
       usage: /zhorse
@@ -17,6 +22,11 @@ commands:
    mof:
       description: Shows configuration options
       usage: /mof [option] [setting]
+      permission: mof.change
+      permission-message: "You do not have permission to use this!"
+   mofmsg:
+      description: View and alter custom death messages
+      usage: /mofmsgs [option] [category] [message]
       permission: mof.change
       permission-message: "You do not have permission to use this!"
    wbrick:

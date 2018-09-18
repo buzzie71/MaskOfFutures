@@ -21,7 +21,7 @@ MoF In-Game Config Changing
 
 `/mof` will bring up the current config states of brick dropping and custom death messages.  These can be altered in-game with:
 
-`/mof [brick-dropping|death-msgs|death-messages|tame-traps|log-vanilla-death] [true|false]`
+`/mof [brick-dropping|brick-dropping-dragon|death-msgs|death-messages|tame-traps|log-vanilla-death] [true|false]`
 
 Additionally, if the config is changed while the plugin is running, or if config settings are to be reverted to the file,
 
@@ -44,6 +44,17 @@ Whenever a Wither explodes during spawn-in, all players on the server will drop 
 `/wbrick (name)`
 
 The list of players who received a brick will also be logged to console.
+
+===
+Brick Dropping (Dragon)
+===
+
+Whenever a Wither explodes during spawn-in, all players on the server will drop a brick at their feet with the lore: "-Player- dropped this on hearing a Wither".  Players in Modmode will not drop this brick, but their presence will instead be logged to console in the hope that they will be reimbursed some time after they leave Modmode.  These bricks can be generated with the administrative command:
+
+`/wbrick (name)`
+
+The list of players who received a brick will also be logged to console.
+
 
 ===
 Death Messages
@@ -116,6 +127,13 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14
+   - Updated to work explicitly on Minecraft 1.13.  This is only a port of the previous version to 1.13; new deaths will be added in the next update.
+
+0.13
+   - Added `/mute-deaths` as another command to silence death messages in the client until the restart.  This functions identically to the existing `/ignore-deaths`.
+   - Added a new config option: `brick-dropping-dragon`.  This option is not currently implemented.  This option was intended to regulate whether or not players will drop a lored brick at their feet whenever the dragon death scream is heard, similar to wither spawns for the existing `brick-dropping` config option.  
+
 0.12
    - Added handling of deaths by illusioner.  Existing versions of the plugin require the addition of the keys msg.arrow.illusioner.item and msg.arrow.illusioner.noitem.  Note that this addition makes the assumption that illusioners can't use melee weapons.
    - Added personal muting of death messages until server restart.  Players can suppress death messages appearing in their chat feed until a server restart with the toggle command `/ignore-deaths`.  Death messages will be received again to the feed after running the same command.

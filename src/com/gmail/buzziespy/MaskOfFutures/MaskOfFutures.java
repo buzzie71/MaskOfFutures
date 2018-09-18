@@ -60,7 +60,7 @@ public final class MaskOfFutures extends JavaPlugin{
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
 	
-		if (cmd.getName().equalsIgnoreCase("ignore-deaths"))
+		if (cmd.getName().equalsIgnoreCase("ignore-deaths")||cmd.getName().equalsIgnoreCase("mute-deaths"))
 		{
 			if (sender instanceof Player)
 			{
@@ -177,7 +177,7 @@ public final class MaskOfFutures extends JavaPlugin{
 			if (args.length == 1 && sender instanceof Player)
 			{
 				Player p = (Player)sender;
-				ItemStack woolbrick = new ItemStack(Material.CLAY_BRICK, 1);
+				ItemStack woolbrick = new ItemStack(Material.BRICK, 1);
 				ItemMeta woolbrickInfo = woolbrick.getItemMeta();
 				List<String> bricklore = new ArrayList<String>(); //not sure how to optimize this
 				bricklore.add(ChatColor.GOLD + "" + ChatColor.ITALIC + args[0] + " dropped this on hearing a Wither");
@@ -411,6 +411,30 @@ public final class MaskOfFutures extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "WARNING: That is not valid syntax!");
 					}
 				}
+				else if (args[0].equalsIgnoreCase("brick-dropping-dragon"))
+				{
+					try
+					{
+						if (args[1].equalsIgnoreCase("true"))
+						{
+							//forcibly set config option for death messages to true, save config and implement new option
+							getConfig().set("brick-dropping-dragon", true);
+							saveConfig();
+							sender.sendMessage(ChatColor.GREEN + "Brick dropping for dragons set to true.  Players online will drop bricks when a dragon is slain.");
+						}
+						else if (args[1].equalsIgnoreCase("false"))
+						{
+							//forcibly set option to false
+							getConfig().set("brick-dropping-dragon", false);
+							saveConfig();
+							sender.sendMessage(ChatColor.RED + "Brick dropping for dragons set to false.  Players will not drop bricks when a dragon is slain.");
+						}
+					}
+					catch (RuntimeException e)
+					{
+						sender.sendMessage(ChatColor.RED + "WARNING: That is not valid syntax!");
+					}
+				}
 				else if (args[0].equalsIgnoreCase("tame-traps"))
 				{
 					try
@@ -478,6 +502,7 @@ public final class MaskOfFutures extends JavaPlugin{
 				sender.sendMessage(ChatColor.AQUA + "https://github.com/buzzie71/MaskOfFutures/blob/master/README.md");
 				sender.sendMessage(ChatColor.AQUA + "=====Mask of Futures, v"+ getDescription().getVersion() +"=====");
 				sender.sendMessage(ChatColor.AQUA + "Brick dropping: " + getConfig().getBoolean("brick-dropping"));
+				sender.sendMessage(ChatColor.AQUA + "Brick dropping (Dragon): " + getConfig().getBoolean("brick-dropping-dragon"));
 				sender.sendMessage(ChatColor.AQUA + "Death messages: " + getConfig().getBoolean("death-msgs"));
 				sender.sendMessage(ChatColor.AQUA + "Tame traps: " + getConfig().getBoolean("tame-traps"));
 				sender.sendMessage(ChatColor.AQUA + "Log vanilla death: " + getConfig().getBoolean("log-vanilla-death"));

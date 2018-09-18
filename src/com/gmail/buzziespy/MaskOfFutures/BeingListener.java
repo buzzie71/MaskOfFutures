@@ -48,6 +48,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Drowned;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderPearl;
@@ -134,7 +135,7 @@ public final class BeingListener implements Listener{
 			//plugin.getLogger().info("EntityExplodeEvent! " + e.getEntity().getName().toString());
 			if (plugin.getConfig().getBoolean("brick-dropping") && e.getEntityType().equals(EntityType.WITHER))
 			{
-				ItemStack woolbrick = new ItemStack(Material.CLAY_BRICK, 1);
+				ItemStack woolbrick = new ItemStack(Material.BRICK, 1);
 				ItemMeta woolbrickInfo = woolbrick.getItemMeta();
 				List<String> bricklore = new ArrayList<String>(); //not sure how to optimize this
 
@@ -192,6 +193,72 @@ public final class BeingListener implements Listener{
 			}
 		}
 
+		//TODO: Add in code to drop a brick for dragon death screams
+		//Need to find the event that can hook into this first.
+		/*
+		@EventHandler
+		public void onDragonDeathScream(SomeEvent e)
+		{
+			if (plugin.getConfig().getBoolean("brick-dropping") && e.getEntityType().equals(EntityType.WITHER))
+			{
+				ItemStack woolbrick = new ItemStack(Material.CLAY_BRICK, 1);
+				ItemMeta woolbrickInfo = woolbrick.getItemMeta();
+				List<String> bricklore = new ArrayList<String>(); //not sure how to optimize this
+
+
+				//Player[] playerList = (Player[])plugin.getServer().getOnlinePlayers().toArray();
+				Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+				Player[] playerList = players.toArray(new Player[players.size()]);
+
+				String log = "Players who dropped bricks on hearing dragon: ";
+				for (Player p: playerList)
+				{
+					if (!p.hasMetadata("MaskOfFutures.dragon"))
+					{
+						//if player is in modmode, log to console
+						bricklore.add(ChatColor.GOLD + "" + ChatColor.ITALIC + p.getName() + " dropped this on hearing a slain Ender Dragon");
+						woolbrickInfo.setLore(bricklore);
+						woolbrick.setItemMeta(woolbrickInfo);
+
+						//Quick and dirty way of doing this is to check for survival mode and flight enabled
+						if (plugin.mmode != null)
+						{
+							if (plugin.mmode.isModMode(p))//player is in modmode - log intended drop, don't actually do it
+							{
+								plugin.getLogger().info(p.getName() + " is in ModMode; brick dropping canceled");
+							}
+							else //if player is not in modmode, just drop naturally
+							{
+								p.getWorld().dropItemNaturally(p.getLocation(), woolbrick);
+							}
+						}
+						else //if modmode is not present just drop naturally
+						{
+							p.getWorld().dropItemNaturally(p.getLocation(), woolbrick);
+						}
+						bricklore.clear();
+
+						p.setMetadata("MaskOfFutures.dragon", new FixedMetadataValue(plugin, "true"));
+					}
+					else //if player has the metadata then the brick has already been dispensed
+					{
+						p.removeMetadata("MaskOfFutures.dragon", plugin);
+					}
+
+					log += p.getName() + " ";
+				}
+
+				plugin.getLogger().info(log);
+			}
+			else
+			{
+				if (e.getEntityType().equals(EntityType.WITHER))
+				{
+					plugin.getLogger().info("Brick dropping canceled; not enabled in config");
+				}
+			}
+		}*/
+		
 		//related to sign drop on death
 		//removed - signs with last line starting with &a do not drop themselves, unintended
 		@EventHandler
@@ -402,7 +469,7 @@ public final class BeingListener implements Listener{
 							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
 
-						placeSignFromReason("zombie", signpoint, e.getEntity());
+						//placeSignFromReason("zombie", signpoint, e.getEntity());
 
 					}
 
@@ -419,7 +486,7 @@ public final class BeingListener implements Listener{
 						{
 							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
-						placeSignFromReason("skeleton", signpoint, e.getEntity());
+						//placeSignFromReason("skeleton", signpoint, e.getEntity());
 					}
 
 					//Zombie Pigman kill
@@ -435,7 +502,7 @@ public final class BeingListener implements Listener{
 						{
 							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
 						}
-						placeSignFromReason("pigzombie", signpoint, e.getEntity());
+						//placeSignFromReason("pigzombie", signpoint, e.getEntity());
 					}
 
 					//Creeper kill
@@ -443,13 +510,13 @@ public final class BeingListener implements Listener{
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("creeper", e.getEntity().getName(), z));
-						placeSignFromReason("creeper", signpoint, e.getEntity());
+						//placeSignFromReason("creeper", signpoint, e.getEntity());
 					}
 					//Anvil kill
 					else if (ee.getDamager() instanceof FallingBlock)
 					{
 						dispatchDeathMessage(e, getDeathReason("anvil", e.getEntity().getName()));
-						placeSignFromReason("anvil", signpoint, e.getEntity());
+						//placeSignFromReason("anvil", signpoint, e.getEntity());
 					}
 					//Slime kill
 					else if (ee.getDamager() instanceof Slime)
@@ -464,7 +531,7 @@ public final class BeingListener implements Listener{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						String killer = (z instanceof CaveSpider) ? "cavespider" : "spider";
 						dispatchDeathMessage(e, getDeathReason(killer, e.getEntity().getName(), z));
-						placeSignFromReason("spider", signpoint, e.getEntity());
+						//placeSignFromReason("spider", signpoint, e.getEntity());
 					}
 					//Witch kill
 					else if (ee.getDamager() instanceof Witch)
@@ -472,35 +539,51 @@ public final class BeingListener implements Listener{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						dispatchDeathMessage(e, getDeathReason("witch", e.getEntity().getName(), z, itemWeapon));
-						placeSignFromReason("witch", signpoint, e.getEntity());
+						//placeSignFromReason("witch", signpoint, e.getEntity());
 					}
 					//Wolf kill
 					else if (ee.getDamager() instanceof Wolf)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("wolf", e.getEntity().getName(), z));
-						placeSignFromReason("wolf", signpoint, e.getEntity());
+						//placeSignFromReason("wolf", signpoint, e.getEntity());
 					}
 					//Blaze kill
 					else if (ee.getDamager() instanceof Blaze)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("blaze", e.getEntity().getName(), z));
-						placeSignFromReason("blaze", signpoint, e.getEntity());
+						//placeSignFromReason("blaze", signpoint, e.getEntity());
+					}
+					//Drowned kill
+					else if (ee.getDamager() instanceof Drowned)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
+						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
+						{
+							dispatchDeathMessage(e, getDeathReason("drowned", e.getEntity().getName(), z, itemWeapon));
+						}
+						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
+						{
+							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
+						}
+
+						//placeSignFromReason("drowned", signpoint, e.getEntity());
 					}
 					//Silverfish kill
 					else if (ee.getDamager() instanceof Silverfish)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("silverfish", e.getEntity().getName(), z));
-						placeSignFromReason("silverfish", signpoint, e.getEntity());
+						//placeSignFromReason("silverfish", signpoint, e.getEntity());
 					}
 					//Iron golem kills
 					else if (ee.getDamager() instanceof IronGolem)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("irongolem", e.getEntity().getName(), z));
-						placeSignFromReason("irongolem", signpoint, e.getEntity());
+						//placeSignFromReason("irongolem", signpoint, e.getEntity());
 					}
 					//Enderman kills
 					else if (ee.getDamager() instanceof Enderman)
@@ -1029,7 +1112,7 @@ public final class BeingListener implements Listener{
 				return s;
 			}
 
-			else if (item.getType().equals(Material.RAW_FISH))
+			else if (item.getType().equals(Material.COD))
 			{
 				List<String> deathItemList = plugin.getConfig().getStringList("msg.rawfish");
 				int index = (int)(Math.random()*deathItemList.size());
@@ -1160,6 +1243,7 @@ public final class BeingListener implements Listener{
 					}
 				}
 				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
+				//s = s.replaceAll(Matcher.quoteReplacement("&i"), item);
 			}
 			else
 			{
@@ -1220,7 +1304,7 @@ public final class BeingListener implements Listener{
 		//Below are methods used for death signs
 		public static void placeSignFromReason(String reason, Location signpoint, Player p)
 		{
-			if (plugin.getConfig().getBoolean("death-signs"))
+			/*if (plugin.getConfig().getBoolean("death-signs"))
 			{
 				if (signpoint != null)
 				{
@@ -1234,7 +1318,7 @@ public final class BeingListener implements Listener{
 
 					int direction = (int)(Math.random()*16); //16 possible directions, so possible data values are 0-15
 
-					signpoint.getBlock().setType(Material.SIGN_POST);
+					signpoint.getBlock().setType(Material.SIGN);
 					//signpoint.getBlock().setData((byte)direction);
 					Sign s = (Sign)signpoint.getBlock().getState();
 					s.setLine(0, p.getName());
@@ -1245,7 +1329,7 @@ public final class BeingListener implements Listener{
 					s.update();
 				}
 			}
-			else
+			else*/
 				return;
 		}
 

@@ -8,6 +8,8 @@ death-msgs: false
 
 brick-dropping: false
 
+brick-dropping-dragon: false
+
 tame-traps: false
 
 log-vanilla-death: true
@@ -195,6 +197,8 @@ msg:
          - "&e&p&3 was killed by magic"
       dispenser:
          - "&e&p&3 was killed by magic swirls from &e&z&3"
+      dragon:
+         - "&e&p&3 was killed by &e&z&3 using magic"
    
    bed:
       - "&e&p&3 was blown up by &eBed&3"

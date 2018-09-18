@@ -1,12 +1,18 @@
 name: MaskOfFutures
 main: com.gmail.buzziespy.MaskOfFutures.MaskOfFutures
-version: 0.12
+version: 0.14
+api-version: 1.13
 softdepend: [ModMode]
 
 commands:
    ignore-deaths:
       description: Mutes incoming death messages
       usage: /ignore-deaths
+      permission:
+      permission-message:
+   mute-deaths:
+      description: Mutes incoming death messages
+      usage: /mute-deaths
       permission:
       permission-message:
    zhorse:

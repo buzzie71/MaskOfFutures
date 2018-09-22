@@ -124,6 +124,9 @@ msg:
    creeper:
       - "&e&p&3 was blown up by &e&z&3"
       
+   phantom:
+      - "&e&p&3 was slain by &e&z&3"
+      
    spider:
       - "&e&p&3 was slain by &e&z&3"
       
@@ -165,6 +168,12 @@ msg:
       
    evoker:
       - "&e&p&3 was killed by &e&z&3 using magic"
+      
+   pufferfish:
+      - "&e&p&3 was slain by &e&z&3"
+      
+   dolphin:
+      - "&e&p&3 was slain by &e&z&3"
       
    firework:
       - "&e&p&3 went out with a bang"

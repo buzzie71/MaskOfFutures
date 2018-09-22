@@ -48,6 +48,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Dolphin;
 import org.bukkit.entity.Drowned;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EnderDragon;
@@ -69,9 +70,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Llama;
 import org.bukkit.entity.LlamaSpit;
 import org.bukkit.entity.MagmaCube;
+import org.bukkit.entity.Phantom;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.PolarBear;
+import org.bukkit.entity.PufferFish;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Shulker;
 import org.bukkit.entity.ShulkerBullet;
@@ -512,6 +515,12 @@ public final class BeingListener implements Listener{
 						dispatchDeathMessage(e, getDeathReason("creeper", e.getEntity().getName(), z));
 						//placeSignFromReason("creeper", signpoint, e.getEntity());
 					}
+					//Phantom kills
+					else if (ee.getDamager() instanceof Phantom)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("phantom", e.getEntity().getName(), z));
+					}
 					//Anvil kill
 					else if (ee.getDamager() instanceof FallingBlock)
 					{
@@ -868,6 +877,18 @@ public final class BeingListener implements Listener{
 						EvokerFangs ef = (EvokerFangs)ee.getDamager();
 						LivingEntity z = (LivingEntity)ef.getOwner();
 						dispatchDeathMessage(e, getDeathReason("evoker", e.getEntity().getName(), z));
+					}
+					//Pufferfish kills
+					else if (ee.getDamager() instanceof PufferFish)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("pufferfish", e.getEntity().getName(), z));
+					}
+					//Dolphin kills
+					else if (ee.getDamager() instanceof Dolphin)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("dolphin", e.getEntity().getName(), z));
 					}
 					//Firework kills
 					else if (ee.getDamager() instanceof Firework)

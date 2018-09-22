@@ -4,7 +4,7 @@
 	<groupId>com.gmail.buzziespy</groupId>
 	<artifactId>MaskOfFutures</artifactId>
 	<name>MaskOfFutures</name>
-	<version>0.14</version>
+	<version>0.14.1</version>
 	<packaging>jar</packaging>
     <description>Custom death messages.</description>
     <url>https://github.com/buzzie71/MaskOfFutures</url>
@@ -26,12 +26,12 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.12-R0.1-SNAPSHOT</version>
+			<version>1.13-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>nu.nerd</groupId>
 			<artifactId>modmode</artifactId>
-			<version>3.5.0</version>
+			<version>3.7.6</version>
 		</dependency>
 	</dependencies>
 	<build>

@@ -127,6 +127,11 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.1
+   - Added handling of deaths by dolphin, pufferfish, and phantom.  Existing versions of the plugin require the addition of the keys msg.dolphin, msg.pufferfish, msg.phantom, respectively.  
+   - (holdover from 0.14) Commented out placeSignFromReason() contents, which was originally intended to be used for placing signs where a player dies (unimplemented feature).
+   - Updated ModMode version to 3.7.6 and Bukkit version to 1.13-R0.1-SNAPSHOT in pom.xml.
+
 0.14
    - Updated to work explicitly on Minecraft 1.13.  This is only a port of the previous version to 1.13; new deaths will be added in the next update.
 

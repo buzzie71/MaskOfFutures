@@ -1,6 +1,6 @@
 name: MaskOfFutures
 main: com.gmail.buzziespy.MaskOfFutures.MaskOfFutures
-version: 0.14.1
+version: 0.14.2
 api-version: 1.13
 softdepend: [ModMode]
 
@@ -45,6 +45,16 @@ commands:
       usage: /tame
       permission:
       permission-message:
+   toggle-oldmsg:
+      description: Toggles between custom and vanilla death messages (toggling for other players requires additional perms)
+      usage: /toggle-oldmsg [player]
+      permission:
+      permission-message:
+   oldmsg-count:
+      description: Displays number of players who are seeing the vanilla death messages
+      usage: /oldmsg-count
+      permission: mof.change
+      permission-message: "You do not have permission to use this!"
       
 permissions:
    mof.*:

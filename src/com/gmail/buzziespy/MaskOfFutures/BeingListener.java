@@ -1,5 +1,7 @@
 package com.gmail.buzziespy.MaskOfFutures;
 
+import java.io.File;
+
 /*
  * Comments for MoF have been added to aid in maintainability.
  * NOTE: Most of the interesting code is over in BeingListener, which handles all the listening
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 
 import nu.nerd.modmode.ModMode;
@@ -43,6 +46,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Blaze;
@@ -1457,9 +1461,10 @@ public final class BeingListener implements Listener{
 			if (plugin.getConfig().getBoolean("death-msgs"))
 			{
 				//event.setDeathMessage(message);
+				String vanillaMessage = event.getDeathMessage();
 				if (plugin.getConfig().getBoolean("log-vanilla-death"))
 				{
-					String vanillaMessage = event.getDeathMessage();
+					//String vanillaMessage = event.getDeathMessage(); moved outside to accommodate vanilla death message setting
 					Bukkit.getLogger().info(vanillaMessage);
 				}
 				
@@ -1475,7 +1480,19 @@ public final class BeingListener implements Listener{
 				{
 					if (!p.hasMetadata("MaskOfFutures.mutedeath"))
 					{
-						p.sendMessage(message);
+						if (p.hasMetadata("MaskOfFutures.oldMsg")) //if tagged with metadata send the vanilla message
+						{
+							p.sendMessage(vanillaMessage);
+						}
+						else if (playerIsInList(p.getUniqueId())) //if not tagged but in the list send the vanilla message
+						{
+							p.setMetadata("MaskOfFutures.oldMsg", new FixedMetadataValue(plugin, "true"));
+							p.sendMessage(vanillaMessage);
+						}
+						else //send the custom message
+						{
+							p.sendMessage(message);
+						}
 					}
 				}
 				
@@ -1484,6 +1501,18 @@ public final class BeingListener implements Listener{
 			{
 				plugin.getLogger().info(message);
 			}
+		}
+		
+		private boolean playerIsInList(UUID playerUUID)
+		{
+			if (plugin.getCustomConfig().contains("oldMsg"))
+			{
+				if (plugin.getCustomConfig().getStringList("oldMsg").contains(playerUUID.toString()))
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 }
 

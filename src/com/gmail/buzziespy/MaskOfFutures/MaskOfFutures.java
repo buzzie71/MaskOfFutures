@@ -1,5 +1,8 @@
 package com.gmail.buzziespy.MaskOfFutures;
 
+import java.io.File;
+import java.io.IOException;
+
 //IT WILL RETURN THROUGH PLAIN SIGHT
 
 import java.util.AbstractSet;
@@ -7,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import nu.nerd.modmode.ModMode;
 
@@ -15,6 +19,9 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
@@ -39,6 +46,36 @@ public final class MaskOfFutures extends JavaPlugin{
 	//so brick reinbursing can occur at a later time
 	ModMode mmode;
 	
+	//custom config stuff - https://www.spigotmc.org/wiki/config-files/#using-custom-configurations
+	private File customConfigFile;
+	private FileConfiguration customConfig;
+	
+	public FileConfiguration getCustomConfig()
+	{
+		return this.customConfig;
+	}
+	
+	public void createCustomConfig()
+	{
+		customConfigFile = new File(getDataFolder(),"oldMsgPlayers.yml");
+		if (!customConfigFile.exists())
+		{
+			customConfigFile.getParentFile().mkdirs();
+			saveResource("oldMsgPlayers.yml",false);
+		}
+		
+		customConfig = new YamlConfiguration();
+		try
+		{
+			customConfig.load(customConfigFile);;
+		}
+		catch (IOException | InvalidConfigurationException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	//end custom config stuff
+	
 	@Override
 	public void onEnable()
 	{
@@ -46,6 +83,8 @@ public final class MaskOfFutures extends JavaPlugin{
 		{
 			mmode = (ModMode)getServer().getPluginManager().getPlugin("ModMode");
 		}
+		//load up the custom config file
+		createCustomConfig();
 		//enable the listener
 		new BeingListener(this);
 	}
@@ -54,6 +93,11 @@ public final class MaskOfFutures extends JavaPlugin{
 	public void onDisable()
 	{
 		this.saveConfig();
+		try {
+			customConfig.save(customConfigFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//some commands
@@ -80,6 +124,41 @@ public final class MaskOfFutures extends JavaPlugin{
 			{
 				sender.sendMessage("You must be in game to run this command.");
 			}
+			return true;
+		}
+		
+		else if (cmd.getName().equalsIgnoreCase("toggle-oldmsg"))
+		{
+			if (args.length == 1) //this is used for admins
+			{
+				//unused
+			}
+			else if (args.length == 0) //no args is what players use to toggle vanilla death messages for themselves
+			{
+				if (sender instanceof Player)
+				{
+					Player p = (Player)sender;
+					if (getCustomConfig().contains("oldMsg"))
+					{
+						//oldMsg will only be used for a UUID list
+						List<String> oldMsgPlayerList = (List<String>) getCustomConfig().getStringList("oldMsg");
+						togglePlayerOnList(oldMsgPlayerList, p);
+						getCustomConfig().set("oldMsg", oldMsgPlayerList);
+					}
+					else
+					{
+						List<String> oldMsgPlayerList = new LinkedList<String>();
+						togglePlayerOnList(oldMsgPlayerList, p);
+						getCustomConfig().set("oldMsg", oldMsgPlayerList);
+					}
+				}
+			}
+			return true;
+		}
+		
+		else if (cmd.getName().equalsIgnoreCase("oldmsg-count"))
+		{
+			sender.sendMessage(ChatColor.AQUA + "" + getCustomConfig().getStringList("oldMsg").size() + " players are seeing the vanilla death messages");
 			return true;
 		}
 		
@@ -502,7 +581,7 @@ public final class MaskOfFutures extends JavaPlugin{
 				sender.sendMessage(ChatColor.AQUA + "https://github.com/buzzie71/MaskOfFutures/blob/master/README.md");
 				sender.sendMessage(ChatColor.AQUA + "=====Mask of Futures, v"+ getDescription().getVersion() +"=====");
 				sender.sendMessage(ChatColor.AQUA + "Brick dropping: " + getConfig().getBoolean("brick-dropping"));
-				sender.sendMessage(ChatColor.AQUA + "Brick dropping (Dragon): " + getConfig().getBoolean("brick-dropping-dragon"));
+				//sender.sendMessage(ChatColor.AQUA + "Brick dropping (Dragon): " + getConfig().getBoolean("brick-dropping-dragon"));
 				sender.sendMessage(ChatColor.AQUA + "Death messages: " + getConfig().getBoolean("death-msgs"));
 				sender.sendMessage(ChatColor.AQUA + "Tame traps: " + getConfig().getBoolean("tame-traps"));
 				sender.sendMessage(ChatColor.AQUA + "Log vanilla death: " + getConfig().getBoolean("log-vanilla-death"));
@@ -595,6 +674,48 @@ public final class MaskOfFutures extends JavaPlugin{
 			keylist = keylist + ", " + it.next();
 		}
 		sender.sendMessage(ChatColor.AQUA + "Available death message categories: " + keylist);
+	}
+	
+	public void togglePlayerOnList(List<String> oldMsgPlayerList, Player p)
+	{
+		//check if the player's UUID is in the list already
+		if (oldMsgPlayerList.contains(p.getUniqueId().toString()))
+		{
+			oldMsgPlayerList.remove(p.getUniqueId().toString());
+			if (p.hasMetadata("MaskOfFutures.oldMsg"))
+			{
+				p.removeMetadata("MaskOfFutures.oldMsg", this);
+			}
+			p.sendMessage(ChatColor.GREEN + "You will now receive custom death messages. Use /toggle-oldmsg to turn off custom death messages.");
+		}
+		else
+		{
+			oldMsgPlayerList.add(p.getUniqueId().toString());
+			p.setMetadata("MaskOfFutures.oldMsgs", new FixedMetadataValue(this, "true"));
+			p.sendMessage(ChatColor.RED + "You will now receive vanilla death messages. Use /toggle-oldmsg to turn on custom death messages.");
+		}
+		
+		/* this implementation works
+		UUID playerUUID = p.getUniqueId();
+		for (String uuid: oldMsgPlayerList)
+		{
+			if (uuid.equalsIgnoreCase(playerUUID.toString()))
+			{
+				oldMsgPlayerList.remove(uuid); //if found, mechanics to remove it
+				if (p.hasMetadata("MaskOfFutures.oldMsg"))
+				{
+					p.removeMetadata("MaskOfFutures.oldMsg", this);
+				}
+				p.sendMessage(ChatColor.GREEN + "You will now receive custom death messages. Use /oldmsg to turn off custom death messages.");
+				return;
+			}
+		}
+		//If player not found, add player UUID to the list and tag them with metadata
+		oldMsgPlayerList.add(p.getUniqueId().toString());
+		p.setMetadata("MaskOfFutures.oldMsgs", new FixedMetadataValue(this, "true"));
+		p.sendMessage(ChatColor.RED + "You will now receive vanilla death messages. Use /oldmsg to turn on custom death messages.");
+		return;
+		*/
 	}
 	
 }

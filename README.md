@@ -127,6 +127,14 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.2
+   - Updated for Minecraft version 1.13.1.  This plugin was built against spigot-1.13.1-R0.1-SNAPSHOT.jar obtained on October 6, 2018 at 9:17 PM PDT.
+   - Added per-player toggling between vanilla and custom death messages.  This can be done with /toggle-oldmsg, and (unlike for muting death messages) the choice is persistent across server restarts.  Capability for admins to toggle the death messages for other players is not implemented at this time.
+   - Note that vanilla messages sent with MoF custom death messages on do not contain item tooltips, unlike the true vanilla death messages that do.  Item tooltips will appear if custom death messages are disabled in this plugin.
+   - Administrators with the `mof.change` permission and console are able to query the number of players seeing the old death messages with `/oldmsg-count`.  The command will only display the number of players who have toggled the option.
+   - Hidden the dragon brick dropping option from the `/mof` configuration menu.  The configuration option is still unimplemented.
+
+
 0.14.1
    - Added handling of deaths by dolphin, pufferfish, and phantom.  Existing versions of the plugin require the addition of the keys msg.dolphin, msg.pufferfish, msg.phantom, respectively.  
    - (holdover from 0.14) Commented out placeSignFromReason() contents, which was originally intended to be used for placing signs where a player dies (unimplemented feature).

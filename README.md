@@ -11,7 +11,7 @@ This plugin contains four features of varying degrees of completeness originally
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
 
-This plugin has been compiled and tested against Spigot-1.12-R01-SNAPSHOT.jar.
+This plugin has been compiled and tested against Spigot-1.13.2-R01-SNAPSHOT.jar.
 
 The plugin is named as a reference to the Kanohi Olisi, the Mask of Alternate Futures, worn by Karzahni in the BIONICLE mythos.
 
@@ -84,6 +84,16 @@ Suppressing death messages
 Players can suppress death messages in their own chat feed by running `/ignore-deaths`.  The same command will also allow death messages in the feed if it was previously suppressed.
 
 ===
+Switching to vanilla death messages
+===
+
+Players can opt to see vanilla death messages instead of custom death messages by running `/toggle-oldmsg`.  The same command will revert the setting and allow players to see custom death messages if they were set to previously receive vanilla death messages.
+
+Note that item tooltips for enchanted items involved in a kill (such as in a death by player) will not appear for players seeing vanilla death messages when custom death messages are enabled in the plugin configuration.  Item tooltips will, however, appear for players if custom death messages are disabled.
+
+Note also that switching to vanilla death messages is still possible if custom death messages are disabled in the plugin configuration, though its effects will not be visible until custom death messages are enabled.
+
+===
 Altering death messages in-game
 ===
 
@@ -127,6 +137,9 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.3
+   - Updated for Minecraft version 1.13.2.  This plugin was built against spigot-1.13.2-R0.1-SNAPSHOT.jar obtained on November 2, 2018 at 10:45 AM PDT.
+
 0.14.2
    - Updated for Minecraft version 1.13.1.  This plugin was built against spigot-1.13.1-R0.1-SNAPSHOT.jar obtained on October 6, 2018 at 9:17 PM PDT.
    - Added per-player toggling between vanilla and custom death messages.  This can be done with /toggle-oldmsg, and (unlike for muting death messages) the choice is persistent across server restarts.  Capability for admins to toggle the death messages for other players is not implemented at this time.

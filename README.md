@@ -137,6 +137,10 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.3.1
+   - Added handling of deaths by thrown trident by drowned and by players, which was inadvertently left out of the previous release.  Existing versions of the plugin require the addition of the keys msg.trident.drowned.item, msg.trident.drowned.noitem, msg.trident.player.item, and msg.trident.player.noitem.
+   - This plugin was built against spigot-1.13.2-R0.1-SNAPSHOT.jar obtained on January 6, 2019 at 9:09 PM EDT.
+
 0.14.3
    - Updated for Minecraft version 1.13.2.  This plugin was built against spigot-1.13.2-R0.1-SNAPSHOT.jar obtained on November 2, 2018 at 10:45 AM PDT.
 

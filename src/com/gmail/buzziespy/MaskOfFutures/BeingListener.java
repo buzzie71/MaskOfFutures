@@ -90,6 +90,7 @@ import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Trident;
 import org.bukkit.entity.Vex;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.Vindicator;
@@ -694,8 +695,8 @@ public final class BeingListener implements Listener{
 							dispatchDeathMessage(e, getDeathReason("wither.kill", e.getEntity().getName(), w));
 						}
 					}
-					//arrow kill
-					else if (ee.getDamager() instanceof Arrow)
+					//arrow kill - note that in 1.13 Trident inherits Arrow, so need to check that the arrow is not a trident
+					else if (ee.getDamager() instanceof Arrow && !(ee.getDamager() instanceof Trident))
 					{
 						//perhaps change this based on distance of shooter?
 						Arrow arrow = (Arrow)ee.getDamager();
@@ -881,6 +882,39 @@ public final class BeingListener implements Listener{
 						EvokerFangs ef = (EvokerFangs)ee.getDamager();
 						LivingEntity z = (LivingEntity)ef.getOwner();
 						dispatchDeathMessage(e, getDeathReason("evoker", e.getEntity().getName(), z));
+					}
+					//Trident kills
+					else if (ee.getDamager() instanceof Trident)
+					{
+						//perhaps change this based on distance of shooter?
+						Trident trident = (Trident)ee.getDamager();
+						/*if (trident.getShooter() != null)
+						{
+							plugin.getLogger().info("Shooter: " + arrow.getShooter().toString());
+						}
+						else
+						{
+							plugin.getLogger().info("Shooter: null");
+						}*/
+						//commented out dispenser code, dispensers cannot shoot tridents
+						/*if (trident.getShooter() instanceof BlockProjectileSource)
+						{
+							dispatchDeathMessage(e, getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
+						}
+						else//if an entity fired this arrow
+						{*/
+							LivingEntity le = (LivingEntity)trident.getShooter();
+							ItemStack itemWeapon = le.getEquipment().getItemInMainHand();
+							if (le instanceof Drowned)
+							{
+								dispatchDeathMessage(e, getDeathReason("trident.drowned", e.getEntity().getName(), le, itemWeapon));
+							}
+							else if (le instanceof Player)
+							{
+								dispatchDeathMessage(e, getDeathReason("trident.player", e.getEntity().getName(), le, itemWeapon));
+							}
+						//}
+						
 					}
 					//Pufferfish kills
 					else if (ee.getDamager() instanceof PufferFish)

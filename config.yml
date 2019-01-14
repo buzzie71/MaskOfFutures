@@ -99,6 +99,18 @@ msg:
          noitem:
             - "&e&p&3 was shot by &e&z&3"
          
+   trident:
+      drowned:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p &3was impaled by &e&z&3"
+      player:
+         item:
+            - "with &i"
+         noitem:
+            - "&e&p &3was impaled by &e&z&3"
+         
    fireball:
       ghast:
          - "&e&p&3 was fireballed by &e&z&3"

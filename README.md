@@ -11,7 +11,7 @@ This plugin contains four features of varying degrees of completeness originally
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
 
-This plugin has been compiled and tested against Spigot-1.13.2-R01-SNAPSHOT.jar.
+This plugin has been compiled and tested against Spigot-1.14.3-R01-SNAPSHOT.jar.
 
 The plugin is named as a reference to the Kanohi Olisi, the Mask of Alternate Futures, worn by Karzahni in the BIONICLE mythos.
 
@@ -137,6 +137,11 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.4
+   - Added handling of deaths by ravager and panda, as well as identification of getting shot by pillagers.  Existing versions of the plugin require the addition of the keys msg.ravager, msg.panda, and msg.arrow.pillager.  (Note that PvP death messages involving a crossbow are not implemented explicitly - they will come in a later update if they are found to require it) 
+   - Removed a leftover console debug message involving thrown potions.
+   - This plugin was built against spigot-1.14.3-R0.1-SNAPSHOT.jar obtained on June 30, 2019 at 8:03 AM PDT.
+
 0.14.3.1
    - Added handling of deaths by thrown trident by drowned and by players, which was inadvertently left out of the previous release.  Existing versions of the plugin require the addition of the keys msg.trident.drowned.item, msg.trident.drowned.noitem, msg.trident.player.item, and msg.trident.player.noitem.
    - This plugin was built against spigot-1.13.2-R0.1-SNAPSHOT.jar obtained on January 6, 2019 at 9:09 PM EDT.

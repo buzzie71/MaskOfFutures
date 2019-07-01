@@ -74,12 +74,15 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Llama;
 import org.bukkit.entity.LlamaSpit;
 import org.bukkit.entity.MagmaCube;
+import org.bukkit.entity.Panda;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.PigZombie;
+import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.PolarBear;
 import org.bukkit.entity.PufferFish;
 import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Ravager;
 import org.bukkit.entity.Shulker;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.Silverfish;
@@ -725,6 +728,10 @@ public final class BeingListener implements Listener{
 							{
 								dispatchDeathMessage(e, getDeathReason("arrow.player", e.getEntity().getName(), le, itemWeapon));
 							}
+							else if (le instanceof Pillager)
+							{
+								dispatchDeathMessage(e, getDeathReason("arrow.pillager", e.getEntity().getName(), le, itemWeapon));
+							}
 							else if (le instanceof Illusioner)
 							{
 								dispatchDeathMessage(e, getDeathReason("arrow.illusioner", e.getEntity().getName(), le, itemWeapon));
@@ -740,7 +747,7 @@ public final class BeingListener implements Listener{
 						//NOTE: Casting projectile shooters as LivingEntities no longer appears to work
 						//LivingEntity le = (LivingEntity)tp.getShooter();
 						ProjectileSource le = (ProjectileSource)tp.getShooter();
-						plugin.getLogger().info("Projectile source: " + le.toString());
+						//plugin.getLogger().info("Projectile source: " + le.toString());
 						if (le instanceof Witch)
 						{
 							Witch w = (Witch)le;
@@ -866,6 +873,12 @@ public final class BeingListener implements Listener{
 							dispatchDeathMessage(e, getDeathReason("vex", e.getEntity().getName(), z, itemWeapon));
 						}
 					}
+					//Ravager kills
+					else if (ee.getDamager() instanceof Ravager)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("ravager", e.getEntity().getName(), z));
+					}
 					//Vindicator kill - assuming it cannot wear thorns armor
 					else if (ee.getDamager() instanceof Vindicator)
 					{
@@ -921,6 +934,12 @@ public final class BeingListener implements Listener{
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("pufferfish", e.getEntity().getName(), z));
+					}
+					//Panda kills (aggressive only)
+					else if (ee.getDamager() instanceof Panda)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("panda", e.getEntity().getName(), z));
 					}
 					//Dolphin kills
 					else if (ee.getDamager() instanceof Dolphin)
@@ -1088,6 +1107,10 @@ public final class BeingListener implements Listener{
 			else if (mobname.equals("Elder_guardian") && killerName.getCustomName() == null)
 			{
 				mobname = "Elder Guardian";
+			}
+			else if (mobname.equals("Trader_llama") && killerName.getCustomName() == null)
+			{
+				mobname = "Trader Llama";
 			}
 			if (killerName.getCustomName() != null)
 			{

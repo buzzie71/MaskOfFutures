@@ -244,6 +244,9 @@ msg:
    cactuspoke:
       - "&e&p &3was pricked to death"
       
+   bush:
+      - "&e&p&3 was poked to death by a sweet berry bush"
+      
    lava:
       - "&e&p &3tried to swim in lava"
       

@@ -106,6 +106,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -1012,7 +1013,17 @@ public final class BeingListener implements Listener{
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.CONTACT))
 				{
-					dispatchDeathMessage(e, getDeathReason("cactuspoke", e.getEntity().getName()));
+					//as of 1.14, this can be triggered by either cactus or berry bush, so need to differentiate between them using EntityDamageByBlockEvent
+					EntityDamageByBlockEvent ebe = (EntityDamageByBlockEvent)victim.getLastDamageCause();
+					String killingBlock = ebe.getDamager().getType().toString();
+					if (killingBlock.equalsIgnoreCase("cactus"))
+					{
+						dispatchDeathMessage(e, getDeathReason("cactuspoke", e.getEntity().getName()));
+					}
+					else if (killingBlock.equalsIgnoreCase("sweet_berry_bush"))
+					{
+						dispatchDeathMessage(e, getDeathReason("bush", e.getEntity().getName()));
+					}
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FIRE_TICK) || lastHit.equals(EntityDamageEvent.DamageCause.FIRE))
 				{

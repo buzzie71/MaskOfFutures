@@ -137,6 +137,9 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.4.1
+   - Added handling of death by berry bush.  Existing versions of the plugin require the addition of the key msg.bush.
+
 0.14.4
    - Added handling of deaths by ravager and panda, as well as identification of getting shot by pillagers.  Existing versions of the plugin require the addition of the keys msg.ravager, msg.panda, msg.arrow.pillager.item, and msg.arrow.pillager.noitem.  (Note that PvP death messages involving a crossbow are not implemented explicitly - they will come in a later update if they are found to require it) 
    - Removed a leftover console debug message involving thrown potions.

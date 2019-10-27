@@ -137,6 +137,10 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.14.5
+   - Changed some category names in config to better match the damage causes in the Spigot API (EntityDamageEvent.DamageCause enum): "crash" -> "fly_into_wall", "hotfloor" -> "hot_floor".  Existing versions of the plugin require these changes to be made to the config.
+   - Altered coding of non-entity kill handling - instead of all such kills being handled on a cause-by-cause basis, certain exceptions are handled specifically but the rest are handled according to the EntityDamageEvent.DamageCause associated with it.  This should not result in any appreciable change in mechanics from the player point of view (provided the previous listed change is carried out).  In future versions, new non-entity kills may be handled by simply adding a new category to the config (with the key based on the EntityDamageEvent.DamageCause enum value associated with it), and the plugin will be updated with handling of exceptions to this (eg. separate handling of CONTACT to discriminate between berry bush and cactus kills).
+
 0.14.4.1
    - Added handling of death by berry bush.  Existing versions of the plugin require the addition of the key msg.bush.
 

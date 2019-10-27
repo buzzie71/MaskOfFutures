@@ -47,27 +47,27 @@ public final class MaskOfFutures extends JavaPlugin{
 	ModMode mmode;
 	
 	//custom config stuff - https://www.spigotmc.org/wiki/config-files/#using-custom-configurations
-	private File customConfigFile;
-	private FileConfiguration customConfig;
+	private File oldMsgPlayersFile;
+	private FileConfiguration oldMsgPlayersConfig;
 	
-	public FileConfiguration getCustomConfig()
+	public FileConfiguration getoldMsgPlayersConfig()
 	{
-		return this.customConfig;
+		return this.oldMsgPlayersConfig;
 	}
 	
-	public void createCustomConfig()
+	public void createoldMsgPlayersConfig()
 	{
-		customConfigFile = new File(getDataFolder(),"oldMsgPlayers.yml");
-		if (!customConfigFile.exists())
+		oldMsgPlayersFile = new File(getDataFolder(),"oldMsgPlayers.yml");
+		if (!oldMsgPlayersFile.exists())
 		{
-			customConfigFile.getParentFile().mkdirs();
+			oldMsgPlayersFile.getParentFile().mkdirs();
 			saveResource("oldMsgPlayers.yml",false);
 		}
 		
-		customConfig = new YamlConfiguration();
+		oldMsgPlayersConfig = new YamlConfiguration();
 		try
 		{
-			customConfig.load(customConfigFile);;
+			oldMsgPlayersConfig.load(oldMsgPlayersFile);;
 		}
 		catch (IOException | InvalidConfigurationException e)
 		{
@@ -84,7 +84,7 @@ public final class MaskOfFutures extends JavaPlugin{
 			mmode = (ModMode)getServer().getPluginManager().getPlugin("ModMode");
 		}
 		//load up the custom config file
-		createCustomConfig();
+		createoldMsgPlayersConfig();
 		//enable the listener
 		new BeingListener(this);
 	}
@@ -94,7 +94,7 @@ public final class MaskOfFutures extends JavaPlugin{
 	{
 		this.saveConfig();
 		try {
-			customConfig.save(customConfigFile);
+			oldMsgPlayersConfig.save(oldMsgPlayersFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -138,18 +138,18 @@ public final class MaskOfFutures extends JavaPlugin{
 				if (sender instanceof Player)
 				{
 					Player p = (Player)sender;
-					if (getCustomConfig().contains("oldMsg"))
+					if (getoldMsgPlayersConfig().contains("oldMsg"))
 					{
 						//oldMsg will only be used for a UUID list
-						List<String> oldMsgPlayerList = (List<String>) getCustomConfig().getStringList("oldMsg");
+						List<String> oldMsgPlayerList = (List<String>) getoldMsgPlayersConfig().getStringList("oldMsg");
 						togglePlayerOnList(oldMsgPlayerList, p);
-						getCustomConfig().set("oldMsg", oldMsgPlayerList);
+						getoldMsgPlayersConfig().set("oldMsg", oldMsgPlayerList);
 					}
 					else
 					{
 						List<String> oldMsgPlayerList = new LinkedList<String>();
 						togglePlayerOnList(oldMsgPlayerList, p);
-						getCustomConfig().set("oldMsg", oldMsgPlayerList);
+						getoldMsgPlayersConfig().set("oldMsg", oldMsgPlayerList);
 					}
 				}
 			}
@@ -158,7 +158,7 @@ public final class MaskOfFutures extends JavaPlugin{
 		
 		else if (cmd.getName().equalsIgnoreCase("oldmsg-count"))
 		{
-			sender.sendMessage(ChatColor.AQUA + "" + getCustomConfig().getStringList("oldMsg").size() + " players are seeing the vanilla death messages");
+			sender.sendMessage(ChatColor.AQUA + "" + getoldMsgPlayersConfig().getStringList("oldMsg").size() + " players are seeing the vanilla death messages");
 			return true;
 		}
 		

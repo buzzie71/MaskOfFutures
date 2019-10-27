@@ -836,14 +836,14 @@ public final class BeingListener implements Listener{
 						AreaEffectCloud t = (AreaEffectCloud) ee.getDamager();
 						ProjectileSource eee = t.getSource();
 						//DEBUG
-						if (eee != null)
+						/*if (eee != null)
 						{
 							plugin.getServer().getLogger().info("Cloud source: " + eee.toString());
 						}
 						else
 						{
 							plugin.getServer().getLogger().info("Cloud source: null");
-						}
+						}*/
 						//at the moment only players and dispensers can shoot lingering potions...also dragons
 						if (eee instanceof Player) //if players 
 						{
@@ -1003,14 +1003,6 @@ public final class BeingListener implements Listener{
 				{
 					dispatchDeathMessage(e, getDeathReason("anvil", e.getEntity().getName()));
 				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.FALL))
-				{
-					dispatchDeathMessage(e, getDeathReason("fall", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.LAVA))
-				{
-					dispatchDeathMessage(e, getDeathReason("lava", e.getEntity().getName()));
-				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.CONTACT))
 				{
 					//as of 1.14, this can be triggered by either cactus or berry bush, so need to differentiate between them using EntityDamageByBlockEvent
@@ -1032,6 +1024,21 @@ public final class BeingListener implements Listener{
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.WITHER))
 				{
 					dispatchDeathMessage(e, getDeathReason("wither.wither", e.getEntity().getName()));
+				}
+				else
+				{
+					dispatchDeathMessage(e, getDeathReason(lastHit.toString().toLowerCase(), e.getEntity().getName()));
+				}
+				
+				//Commented out some of the death-reason-from-damage-cause code 
+				//to try to simplify and make it more robust to updates
+				/*else if (lastHit.equals(EntityDamageEvent.DamageCause.FALL))
+				{
+					dispatchDeathMessage(e, getDeathReason("fall", e.getEntity().getName()));
+				}
+				else if (lastHit.equals(EntityDamageEvent.DamageCause.LAVA))
+				{
+					dispatchDeathMessage(e, getDeathReason("lava", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.SUFFOCATION))
 				{
@@ -1055,11 +1062,11 @@ public final class BeingListener implements Listener{
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL))
 				{
-					dispatchDeathMessage(e, getDeathReason("crash", e.getEntity().getName()));
+					dispatchDeathMessage(e, getDeathReason("fly_into_wall", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.HOT_FLOOR))
 				{
-					dispatchDeathMessage(e, getDeathReason("hotfloor", e.getEntity().getName()));
+					dispatchDeathMessage(e, getDeathReason("hot_floor", e.getEntity().getName()));
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
 				{
@@ -1068,7 +1075,7 @@ public final class BeingListener implements Listener{
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.CRAMMING))
 				{
 					dispatchDeathMessage(e, getDeathReason("cramming", e.getEntity().getName()));
-				}
+				}*/
 			}
 		}
 
@@ -1573,9 +1580,9 @@ public final class BeingListener implements Listener{
 		
 		private boolean playerIsInList(UUID playerUUID)
 		{
-			if (plugin.getCustomConfig().contains("oldMsg"))
+			if (plugin.getoldMsgPlayersConfig().contains("oldMsg"))
 			{
-				if (plugin.getCustomConfig().getStringList("oldMsg").contains(playerUUID.toString()))
+				if (plugin.getoldMsgPlayersConfig().getStringList("oldMsg").contains(playerUUID.toString()))
 				{
 					return true;
 				}

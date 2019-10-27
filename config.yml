@@ -238,7 +238,7 @@ msg:
    fall:
       - "&e&p &3fell from a high place"
       
-   crash:
+   fly_into_wall:
       - "&e&p&3 experienced kinetic energy"
       
    cactuspoke:
@@ -279,7 +279,7 @@ msg:
    void:
       - "&e&p &3fell into the void"
       
-   hotfloor:
+   hot_floor:
       - "&e&p &3 discovered floor was lava, literally"
       
    magic:

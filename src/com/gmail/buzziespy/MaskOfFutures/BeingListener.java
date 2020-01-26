@@ -49,6 +49,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Creeper;
@@ -947,6 +948,12 @@ public final class BeingListener implements Listener{
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						dispatchDeathMessage(e, getDeathReason("dolphin", e.getEntity().getName(), z));
+					}
+					//Bee kills
+					else if (ee.getDamager() instanceof Bee)
+					{
+						LivingEntity z = (LivingEntity)ee.getDamager();
+						dispatchDeathMessage(e, getDeathReason("bee", e.getEntity().getName(), z));
 					}
 					//Firework kills
 					else if (ee.getDamager() instanceof Firework)

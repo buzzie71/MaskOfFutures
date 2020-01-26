@@ -198,6 +198,9 @@ msg:
    dolphin:
       - "&e&p&3 was slain by &e&z&3"
       
+   bee:
+      - "&e&p&3 was stung to death by &e&z&3"
+      
    firework:
       - "&e&p&3 went out with a bang"
       

@@ -137,6 +137,12 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.15.1
+   - Mob name processing code refactoring.
+   - Cleanup of now-obsolete code from changes in version 0.14.5.
+   - Added example death message of death by custom (ie. plugin).
+   - This plugin was built with spigot-api-1.15.2-R0.1-SNAPSHOT.jar obtained on April 26, 2020 at 10:04 AM PDT.
+
 0.15
    - This plugin was built against spigot-1.15-R0.1-SNAPSHOT.jar obtained on January 24, 2020 at 8:18 PM PDT.
    - Added handling of death by bee.  Existing versions of the plugin require the addition of the key msg.bee.

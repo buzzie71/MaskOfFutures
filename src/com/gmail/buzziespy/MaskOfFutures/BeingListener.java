@@ -1243,7 +1243,8 @@ public final class BeingListener implements Listener{
 				}
 				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
 				s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-				String mobname = killerName.getType().toString().toLowerCase();
+				String mobname = getProcessedMobName(killerName);
+				/*String mobname = killerName.getType().toString().toLowerCase();
 				mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
 				if (killerName.getCustomName() != null)
 				{
@@ -1269,7 +1270,7 @@ public final class BeingListener implements Listener{
 				{
 					Player p = (Player)killerName;
 					mobname = p.getName();
-				}
+				}*/
 
 				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 				s = ChatColor.translateAlternateColorCodes('&', s);
@@ -1317,7 +1318,8 @@ public final class BeingListener implements Listener{
 
 			//System.out.println(s);
 			s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-			String mobname = killerName.getType().toString().toLowerCase();
+			String mobname = getProcessedMobName(killerName);
+			/*String mobname = killerName.getType().toString().toLowerCase();
 			mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
 			if (killerName.getCustomName() != null)
 			{
@@ -1344,7 +1346,7 @@ public final class BeingListener implements Listener{
 			{
 				Player p = (Player)killerName;
 				mobname = p.getName();
-			}
+			}*/
 
 			s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);

@@ -137,6 +137,9 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.15.1.1
+   - Added refactoring to remaining applicable locations in the code.
+
 0.15.1
    - Mob name processing code refactoring.
    - Cleanup of now-obsolete code from changes in version 0.14.5.

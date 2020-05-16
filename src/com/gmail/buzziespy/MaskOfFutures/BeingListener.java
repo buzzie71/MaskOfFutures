@@ -1036,53 +1036,6 @@ public final class BeingListener implements Listener{
 				{
 					dispatchDeathMessage(e, getDeathReason(lastHit.toString().toLowerCase(), e.getEntity().getName()));
 				}
-				
-				//Commented out some of the death-reason-from-damage-cause code 
-				//to try to simplify and make it more robust to updates
-				/*else if (lastHit.equals(EntityDamageEvent.DamageCause.FALL))
-				{
-					dispatchDeathMessage(e, getDeathReason("fall", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.LAVA))
-				{
-					dispatchDeathMessage(e, getDeathReason("lava", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.SUFFOCATION))
-				{
-					dispatchDeathMessage(e, getDeathReason("suffocation", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.DROWNING))
-				{
-					dispatchDeathMessage(e, getDeathReason("drowning", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.STARVATION))
-				{
-					dispatchDeathMessage(e, getDeathReason("starvation", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.VOID))
-				{
-					dispatchDeathMessage(e, getDeathReason("void", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.MAGIC))
-				{
-					dispatchDeathMessage(e, getDeathReason("magic", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL))
-				{
-					dispatchDeathMessage(e, getDeathReason("fly_into_wall", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.HOT_FLOOR))
-				{
-					dispatchDeathMessage(e, getDeathReason("hot_floor", e.getEntity().getName()));
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION))
-				{
-					// Not currently handled - this fires on kill by Ender Crystal; this is handled with other entity kills above
-				}
-				else if (lastHit.equals(EntityDamageEvent.DamageCause.CRAMMING))
-				{
-					dispatchDeathMessage(e, getDeathReason("cramming", e.getEntity().getName()));
-				}*/
 			}
 		}
 
@@ -1104,7 +1057,8 @@ public final class BeingListener implements Listener{
 			int index = (int)(Math.random()*deathReasonList.size());
 			String s = deathReasonList.get(index);
 			s = s.replace(Matcher.quoteReplacement("&p"), playerName);
-			String mobname = killerName.getType().toString().toLowerCase();
+			String mobname = getProcessedMobName(killerName);
+			/*String mobname = killerName.getType().toString().toLowerCase();
 			mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
 
 			//Some mob names are reported with underscores - need to modify the mobname so they
@@ -1145,7 +1099,7 @@ public final class BeingListener implements Listener{
 			{
 				Player p = (Player)killerName;
 				mobname = p.getName();
-			}
+			}*/
 			s = s.replace("&z", mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);
 			return s;
@@ -1184,7 +1138,10 @@ public final class BeingListener implements Listener{
 				}
 				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
 				s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-				String mobname = killerName.getType().toString().toLowerCase();
+				//TODO: replace below block of code with this line, test with zombie and zig/wither skellie kills:
+				String mobname = getProcessedMobName(killerName);
+				//replace starting from here
+				/*String mobname = killerName.getType().toString().toLowerCase();
 				mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
 				if (killerName.getCustomName() != null)
 				{
@@ -1210,9 +1167,9 @@ public final class BeingListener implements Listener{
 				{
 					Player p = (Player)killerName;
 					mobname = p.getName();
-				}
+				}*/
 
-
+				//end replace
 				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 				s = ChatColor.translateAlternateColorCodes('&', s);
 
@@ -1235,7 +1192,8 @@ public final class BeingListener implements Listener{
 				}
 				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
 				s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-				String mobname = killerName.getType().toString().toLowerCase();
+				String mobname = getProcessedMobName(killerName);
+				/*String mobname = killerName.getType().toString().toLowerCase();
 				mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
 				if (killerName.getCustomName() != null)
 				{
@@ -1261,7 +1219,7 @@ public final class BeingListener implements Listener{
 				{
 					Player p = (Player)killerName;
 					mobname = p.getName();
-				}
+				}*/
 
 				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 				s = ChatColor.translateAlternateColorCodes('&', s);
@@ -1595,6 +1553,68 @@ public final class BeingListener implements Listener{
 				}
 			}
 			return false;
+		}
+		
+		private static String getProcessedMobName(LivingEntity killer)
+		{
+			String mobname = killer.getType().toString().toLowerCase();
+			mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1); //capitalize first letter
+			if (killer.getCustomName() != null) //if it is named
+			{
+				mobname = killer.getCustomName();
+			}
+			else //if it does not have a custom name
+			{
+				//Zombie Pigman exception - if the mobname is calculated to be Pig_zombie and it was not nametagged to be that
+				if (mobname.equals("Pig_zombie"))
+				{
+					mobname = "Zombie Pigman";
+				}
+				//Zombie Villager exception
+				else if (mobname.equals("Zombie_villager"))
+				{
+					mobname = "Zombie Villager";
+				}
+				//Wither Skeleton exception
+				else if (mobname.equals("Wither_skeleton"))
+				{
+					mobname = "Wither Skeleton";
+				}
+				else if (mobname.equals("Magma_cube"))
+				{
+					mobname = "Magma Cube";
+				}
+				else if (mobname.equals("Iron_golem"))
+				{
+					mobname = "Iron Golem";
+				}
+				else if (mobname.equals("Cave_spider"))
+				{
+					mobname = "Cave Spider";
+				}
+				else if (mobname.equals("Ender_dragon"))
+				{
+					mobname = "Ender Dragon";
+				}
+				else if (mobname.equals("Polar_bear"))
+				{
+					mobname = "Polar Bear";
+				}
+				else if (mobname.equals("Elder_guardian"))
+				{
+					mobname = "Elder Guardian";
+				}
+				else if (mobname.equals("Trader_llama"))
+				{
+					mobname = "Trader Llama";
+				}
+				else if (killer instanceof Player)  //Player exception, since getCustomName() returns null for player
+				{
+					Player p = (Player)killer;
+					mobname = p.getName();
+				}
+			}
+			return mobname;
 		}
 }
 

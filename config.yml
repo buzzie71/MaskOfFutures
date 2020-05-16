@@ -308,3 +308,6 @@ msg:
       
    cramming:
       - "&e&p&3 was squished too much"
+      
+   custom:
+      - "&e&p&3 was killed by a plugin maybe"

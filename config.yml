@@ -14,6 +14,20 @@ tame-traps: false
 
 log-vanilla-death: true
 
+### CUSTOM MESSAGES FOR ITEMS ###
+# add Minecraft items (follow the Material enum) for custom death messages here.
+# These should be accompanied with a list of death messages under msg.<item>
+itemMsg:
+   - "cod"
+   - "glowstone"
+   - "glowstone_dust"
+   - "feather"
+
+### DEATH MESSAGE LIST SHARING ###
+# this list specifies which death messages should be used for certain mobs
+# eg. husks could be set to use zombie death message list
+listShare:
+
 ### DEATH SIGNS CONFIG ###
 # Incomplete implementation, this can be ignored...?
 
@@ -62,12 +76,30 @@ msg:
       noitem:
          - "&e&p &3was slain by &e&z&3"
          
-   pigzombie:
+   pig_zombie:
       item:
          - "with &i"
       noitem:
          - "&e&p &3was slain by &e&z&3"
          
+   piglin:
+      item:
+         - "with &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
+   piglin_brute:
+      item:
+         - "with &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+         
+   zombified_piglin:
+      item:
+         - "with &i"
+      noitem:
+         - "&e&p &3was slain by &e&z&3"
+   
    vex:
       item:
          - "with &i"
@@ -94,6 +126,11 @@ msg:
       dispenser:
          - "&e&p &3was shot by &eHerobrine&3"
       pillager:
+         item:
+         - "with &i"
+         noitem:
+         - "&e&p&3 was shot by &e&z&3"
+      piglin:
          item:
          - "with &i"
          noitem:
@@ -147,8 +184,14 @@ msg:
    spider:
       - "&e&p&3 was slain by &e&z&3"
       
-   cavespider:
+   cave_spider:
       - "&e&p&3 was slain again by &e&z&3"
+   
+   hoglin:
+      - "&e&p&3 was slain by &e&z&3"
+   
+   zoglin:
+      - "&e&p&3 was slain by &e&z&3"
    
    slime:
       - "&e&p&3 was slain by &e&z&3"
@@ -165,13 +208,13 @@ msg:
    endermite:
       - "&e&p&3 was slain by &e&z&3"
       
-   magmacube:
+   magma_cube:
       - "&e&p&3 was fried by &e&z&3"
       
    enderman:
       - "&e&p&3 was slain by &e&z&3"
       
-   irongolem:
+   iron_golem:
       - "&e&p&3 was slain by &e&z&3"
       
    rabbit:
@@ -180,7 +223,7 @@ msg:
    guardian:
       - "&e&p&3 was slain by &e&z&3"
       
-   elderguardian:
+   elder_guardian:
       - "&e&p&3 was slain by &e&z&3"
       
    ravager:
@@ -213,7 +256,7 @@ msg:
    shulker:
       - "&e&p&3 was slain by &e&z&3"
       
-   polarbear:
+   polar_bear:
       - "&e&p&3 was slain by &e&z&3"
       
    pearl:
@@ -297,7 +340,7 @@ msg:
    feather:
       - "&e&p &3was tickled to death by &e&z&3 wielding &i"
       
-   rawfish:
+   cod:
       - "&e&z &3scored a FISH KILL on &e&p&3 with &i"
       
    glowstone:
@@ -311,3 +354,6 @@ msg:
       
    custom:
       - "&e&p&3 was killed by a plugin maybe"
+      
+   lightning:
+      - "&e&p&3 was struck by lightning"

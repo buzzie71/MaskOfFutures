@@ -11,7 +11,7 @@ This plugin contains four features of varying degrees of completeness originally
 
 The original concept for death signs was the idea that a sign reporting player name, reason of death, and time of death (server time) would be placed at the location of the player's death.  Policy and maintainability concerns ended development of this partway through, but bits of this are still present in the code.
 
-This plugin has been compiled and tested against Spigot-1.14.3-R01-SNAPSHOT.jar.
+This plugin has been compiled and tested against Spigot-1.15.2-R01-SNAPSHOT.jar.
 
 The plugin is named as a reference to the Kanohi Olisi, the Mask of Alternate Futures, worn by Karzahni in the BIONICLE mythos.
 
@@ -49,11 +49,7 @@ The list of players who received a brick will also be logged to console.
 Brick Dropping (Dragon)
 ===
 
-Whenever a Wither explodes during spawn-in, all players on the server will drop a brick at their feet with the lore: "-Player- dropped this on hearing a Wither".  Players in Modmode will not drop this brick, but their presence will instead be logged to console in the hope that they will be reimbursed some time after they leave Modmode.  These bricks can be generated with the administrative command:
-
-`/wbrick (name)`
-
-The list of players who received a brick will also be logged to console.
+(currently not implemented)
 
 
 ===
@@ -69,13 +65,25 @@ These custom death messages are specified in the config file (config.yml) and, w
 The configuration supports the use of color codes with a & prefix.  In addition to the Minecraft formatting codes, other codes are used to specify different strings:
 
 - `&p` denotes the name of the killed player.
-- `&z` denotes the name of the killing mob.  If the mob does not have a custom name, the name of the mob type is used instead.
+- `&z` denotes the name of the killing mob/player.  If the killer is not a player and does not have a custom name (eg. from being nametagged), the name of the mob type is used instead.
 - `&i` denotes the name of the item in the killing mob's hand at the time of the kill.  If the item does not have a custom name (that is, not named on an anvil or through plugins), then the item type as listed in the Bukkit API's Material enum is used instead.  (This is used in the with-item phrase contained in msg.mobtype.item, which is not included in the death message unless the killing mob is holding an item.  The behavior of using this code in the main death message when the mob is not holding an item is undefined.)
 - `&w` denotes a space concatenated in front of the with-item phrase given in msg.mobtype.item.  This can be inserted in death messages for mobs that can kill with an item (given in msg.mobtype.noitem) to specify where this phrase goes in the message.  Such a death message will append the with-item phrase at the end of the given death message if the `&w` code is missing.
 
 When a player dies and custom death messages are on, the plugin will randomly choose one death message from the config's list for the applicable death reason, replace flags with names as described above, and display it.  
 
 If a player dies due to a mob that can visibly hold an item (eg. zombies, skeletons, players, witches), a random death message from the applicable death reason's `noitem` list is chosen.  If the killing mob is holding an item at time of player death, a random with-item phrase is chosen from the applicable death reason's `item` list and either appended to the end of the `noitem` death message or substituted in place of `&w` as described above.  The resulting death message is then displayed.
+
+===
+Custom message items
+===
+
+For death messages that include item reporting, certain items can be configured to display a custom message if the item was held by the killing mob/player, regardless of what the mob was.  Such a death message is displayed if the item (referenced by its name in the Material enum) is listed under the String list `itemMsg` in the config, and there is a corresponding category for it containing death messages.  For example, for custom messages to appear for feathers, `itemMsg` should contain `feather`, and death messages should be provided under `msg.feather`.  Note that the item must be listed under `itemMsg` and have corresponding death messages; if the latter is missing, the plugin will handle the death message according to the mob that made the kill, as is the usual behavior.
+
+===
+Death message sharing
+===
+
+Kills by certain causes can be configured to use a death message list for another cause.  This is encoded in the config by an additional key under `listShare`, with one String naming the cause whose death message list to use placed under that key.  This feature was envisioned to be used primarily for mobs (eg. kills by husk using death messages for zombies, which would be indicated in the config by the presence of the key `listShare.husk` with String `"zombie"` listed inside).
 
 ===
 Suppressing death messages
@@ -102,8 +110,18 @@ There exist commands intended for server administrators to alter the death messa
    - `/mofmsg view [category]` will show a list of subcategories if they exist (eg. a query of `zombie` will show subcategories `item` and `noitem`).  Subcategories can be queried by appending them to categories after a period (eg. `zombie.noitem`).  Otherwise, the command will show a list of strings in that subcategory.  The actual key that is queried in the config is `msg.[category supplied in the command]`.
    - `/mofmsg add [category] [death message]` will add the specified death message to the category.  This can only be done for string lists.
    - `/mofmsg delete [category] [number]` will delete the string with that number from the list, as seen when querying it with `view`.  This can only be done for string lists.
-   - `/mofmsg addcat [category]` will add a new category of strings or overwrite an existing category, as well as insert a placeholder string in the resulting list.  Be sure to replace the placeholder!  Useful for adding new death message categories, eg. if a new death method is added to the game but not yet to the config.
+   - `/mofmsg addcat [category]` will add a new category of strings or overwrite an existing category, as well as insert a placeholder string in the resulting list.  Be sure to replace the placeholder!  Useful for adding new death message categories, eg. if a new death method is added to the game but not yet to the config.  This can also be used to add categories for custom message items.
    - `/mofmsg delcat [category]` will delete the category.  The command will restore all the string lists in that category to its default values, if they exist in the default config.  Its effect on the parent keys of the string list is undefined, but they can be restored by using `addcat` to remake their place in the config.
+   - `/mofmsg renamecat [category1] [category2]` will rename a category from existing category [category1] to a new category [category2].  [category1] is then deleted.  Note that this command will not work if [category1] does not exist, or if [category2] exists and has more than one entry.
+   - `/mofmsg viewitem` will display the items under `itemMsg` that may display custom death messages when held by a mob that kills the player as a numbered list.
+   - `/mofmsg additem [itemname]` will add the specified item to the `itemMsg` list.  To create corresponding death messages for the item, use `/mofmsg addcat [itemname]` and then `add` and `delete` to change the list of death messages in the created category.
+   - `/mofmsg delitem [number]` will remove the numbered entry according to the list shown with `/mofmsg viewitem`, and will prevent kills by the removed item from showing a custom death message for it.  (This change may not take effect until after a server restart.)
+   - `/mofmsg additemreport [category]` will convert the mentioned category to support item reporting.  Specifically, it moves the death messages in `msg.[category]` to `msg.[category].noitem` and adds `msg.[category].item`.  This is only recommended for use for death messages by mob; the behavior after using this on non-mob kills is undefined.  If the category already supports item reporting (has `.item` and `.noitem` lists), or has a different key format, then this command will do nothing.
+   - `/mofmsg delitemreport [category]` will remove item reporting from the mentioned category.  Specifically, it moves the death messages in `msg.[category].noitem` to `msg.[category]` and deletes `msg.[category].item`.  This is only recommended for use for death messages by mob; the behavior after using this on non-mob kills is undefined.  If the category does not support item reporting (does not have `.item` or `.noitem` lists), or has a different key format, then this command will do nothing.
+   - `/mofmsg viewshare` will show all the mob list sharing currently in the config in the form `[cause1] -> [cause2]`.  `[cause1]` refers to the kill cause, while `[cause2]` refers to the kill cause whose death message list is used for kills by `[cause1]`.  Both `[cause1]` and `[cause2]` follow the death cause naming convention of the plugin, which for mobs will generally follow the Spigot EntityType enum naming convention.
+   - `/mofmsg addshare [cause1] [cause2]` will add the specified death message sharing to the `listShare` list in the config.  Naming conventions for `[cause1]` and `[cause2]` are described in the preceding description for `/mofmsg viewshare`.
+   - `/mofmsg delshare [number]` will remove the numbered entry according to the list shown with `/mofmsg viewshare`, and thus remove the use of `[cause2]` death messages for kills by `[cause1]`.
+
 
 ===
 Undead horse spawning and taming
@@ -137,6 +155,22 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.16
+   - Keys `itemMsg` and `listShare` are automatically added with data consistent to what is in config.yml on plugin startup, if they do not exist in the config.  
+   - Cleanup of item message handling.  Existing versions of the plugin should add the key itemMsg to the config, and add strings "[Material]" to the itemMsg list. [Material] corresponds to the Material enum of items that should cause a death message to be reported as a special item kill message when held by the killer (for mobs that carry an item in their main hand).  To preserve previous functionality, itemMsg should be added in as a new key, with a String list containing "cod", "glowstone", "glowstone_dust", and "feather".  Additionally, the key msg.rawfish should be altered to msg.cod, and the String list under msg.glowstone should be copied under a new key named msg.glowstone_dust.  For an example of how to implement this, see config.yml.  Note that a default itemMsg will be created on plugin startup if it does not exist in the config, but msg.glowstone_dust is not automatically created.
+   - Added death message list sharing in the config.  This directs the plugin to use an existing death message list for a given mob even if the mob that killed the player is different from the ones the death messages are written for.  To preserve previous functionality, these keys should be added: listShare.husk, listShare.zombie_villager, listShare.stray, listShare.wither_skeleton.  Strings "zombie", "zombie", "skeleton", and "skeleton" should be added under those four keys, respectively.  For an example of how to implement this, see config.yml.  Note that a default listShare will be created on plugin startup if it does not exist in the config.
+   - Additional commands under `/mofmsg` to change item message handling and death message list sharing from in-game.
+   - Various code cleanup, simplifying, and genericizing.
+   - Altered coding of most entity kill handling - instead of all such kills being handled on a cause-by-cause basis, certain exceptions are handled specifically but the rest are handled according to the EntityType of the killing mob.  This should not result in any appreciable change in mechanics from the player point of view.  In future versions, new entity melee kills may be handled by simply adding a new category to the config (with the key based on the EntityType enum value associated with it), and the plugin will be updated with handling of exceptions to this.  Note that projectile kills are currently not handled generically but may be in a later update.
+   - Various updates to default config to add an underscore to separate mob names in the config with more than one word.  Existing versions of the plugin should make these changes as well.  (For example: polarbear -> polar_bear, cavespider -> cave_spider, irongolem -> iron_golem, elderguardian -> elder_guardian).  Note that the pigzombie category (in configs of older versions of this plugin for deaths by zombie pigmen) is obsolete for 1.16.3 due to its replacement with zombie piglins.
+   - Added `/mofmsg [addshare/viewshare/delshare]` to allow manipulation of death message sharing in-game, as well as `/mofmsg [additem/viewitem/delitem]`  to allow manipulation of custom item death messages in-game.
+   - Added `/mofmsg renamecat` to allow renaming of death message categories (eg. to facilitate renaming long death message lists for death messages that need an underscore).
+   - Added `/mofmsg [additemreport/delitemreport]` to allow conversion or removal of item reporting from a death message.  This is only recommended for kills by mobs.
+   - Added handling of kills by lightning.  Existing versions of the plugin require the addition of the key msg.lightning.
+   - Updated default config.yml with default messages for 1.16.3 mobs and lightning.
+   - This plugin was built with spigot-api-1.16.3-R0.1-SNAPSHOT.jar obtained on October 3, 2020 at 6:35 PM PDT.
+
+
 0.15.1.1
    - Added refactoring to remaining applicable locations in the code.
 

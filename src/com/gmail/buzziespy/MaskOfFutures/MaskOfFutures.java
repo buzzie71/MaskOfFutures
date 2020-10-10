@@ -24,6 +24,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +47,9 @@ public final class MaskOfFutures extends JavaPlugin{
 	//so brick reinbursing can occur at a later time
 	ModMode mmode;
 	
+	//stores list of custom item messages
+	public List<String> itemMsgList;
+	
 	//custom config stuff - https://www.spigotmc.org/wiki/config-files/#using-custom-configurations
 	private File oldMsgPlayersFile;
 	private FileConfiguration oldMsgPlayersConfig;
@@ -67,7 +71,7 @@ public final class MaskOfFutures extends JavaPlugin{
 		oldMsgPlayersConfig = new YamlConfiguration();
 		try
 		{
-			oldMsgPlayersConfig.load(oldMsgPlayersFile);;
+			oldMsgPlayersConfig.load(oldMsgPlayersFile);
 		}
 		catch (IOException | InvalidConfigurationException e)
 		{
@@ -271,7 +275,7 @@ public final class MaskOfFutures extends JavaPlugin{
 		{
 			if (args.length == 0 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
 			{
-				sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)");
+				sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)");
 				displayDeathMessageList(sender);
 				return true;
 			}
@@ -291,9 +295,64 @@ public final class MaskOfFutures extends JavaPlugin{
 				{
 					sender.sendMessage(ChatColor.RED + "/mofmsg delete [category] [item number]\nUse /mofmsg to see list of permissible categories.");
 				}
+				else if (args[0].equalsIgnoreCase("viewitem"))
+				{
+					ArrayList<String> itemlist = (ArrayList<String>)getConfig().getStringList("itemMsg");
+					Iterator<String> it = itemlist.iterator();
+					int size = itemlist.size();
+					String keylist = "itemMsg" + "\n======\n";
+					for (int i=0; i<size; i++)
+					{
+						keylist = keylist + (i+1) + ". " + it.next();
+						if (it.hasNext())
+						{
+							keylist = keylist + "\n";
+						}
+					}
+					sender.sendMessage(ChatColor.AQUA + keylist);
+				}
+				//TODO: finish coding and testing this (list of shared death message links)
+				else if (args[0].equalsIgnoreCase("viewshare"))
+				{
+					AbstractSet<String> sharemsglist = (AbstractSet<String>) getConfig().getConfigurationSection("listShare").getKeys(false);
+					Iterator<String> it = sharemsglist.iterator();
+					if (it.hasNext())
+					{
+						int size = sharemsglist.size();
+						String keylist = "listShare" + "\n======\n";
+						for (int i=0; i<size; i++)
+						{
+							String key = it.next();
+							keylist = keylist + (i+1) + ". " + key + " -> " + getConfig().getString("listShare."+key);
+							if (it.hasNext())
+							{
+								keylist = keylist + "\n";
+							}
+						}
+						sender.sendMessage(ChatColor.AQUA + keylist);
+					}
+					
+					
+					/*
+					if (it.hasNext())
+					{
+						String keylist = it.next(); //assumes there is always at least one key - this is less likely to be true!
+						while (it.hasNext())
+						{
+							String key = it.next();
+							keylist = keylist + ", " + it.next();
+						}
+						sender.sendMessage(ChatColor.AQUA + "Available death message categories: " + keylist);
+					}*/
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "No list sharing configuration was found.");
+					}
+					
+				}
 				else
 				{
-					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
 				}
 				return true;
 			}
@@ -366,9 +425,100 @@ public final class MaskOfFutures extends JavaPlugin{
 						getLogger().info("[MOF] " + sender.getName() + " deleted the death message category at msg." + args[1]);
 					//}
 				}
+				else if (args[0].equalsIgnoreCase("additem"))
+				{
+					sender.sendMessage(ChatColor.GREEN + "Added " + args[1] + " to custom message items.");
+					List<String> itemList = getConfig().getStringList("itemMsg"); 
+					itemList.add(args[1]);
+					getConfig().set("itemMsg", itemList);
+					getLogger().info("[MOF] " + sender.getName() + " added item " + args[1] + " to list of custom message items.");
+				}
+				//note: this will throw an exception if the integer argument is negative or cannot be parsed
+				else if (args[0].equalsIgnoreCase("delitem"))
+				{
+					//takes in number of the item on the list as an argument
+					List<String> itemList = getConfig().getStringList("itemMsg");
+					if (Integer.parseInt(args[1])-1 < itemList.size())
+					{
+						String deletedItem = itemList.get(Integer.parseInt(args[1])-1);
+						itemList.remove(Integer.parseInt(args[1])-1);
+						getConfig().set("itemMsg", itemList);
+						sender.sendMessage(ChatColor.RED + "Removed from " + "itemMsg" + ": " + deletedItem);
+						getLogger().info("[MOF] " + sender.getName() + " deleted a custom message item from itemMsg: " + deletedItem + "");
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "/mofmsg delitem [item number]\nUse /mofmsg viewitem to see list of custom message items.");
+					}
+				}
+				else if (args[0].equalsIgnoreCase("delshare"))
+				{
+					// /mofmsg delshare <mobtypename> (as numbered in the key list)
+					if (getConfig().contains("listShare."+args[1])) //if it exists in the config
+					{
+						String oldmobtypename = getConfig().getString("listShare."+args[1]);
+						getConfig().set("listShare."+args[1], null);
+						sender.sendMessage(ChatColor.RED + "Deleted " + "listShare."+args[1] + " from config.  Death messages for " + args[1] + " will no longer use list for " + oldmobtypename + ".");
+						getLogger().info("[MOF] " + sender.getName() + " deleted the list sharing at listShare." + args[1] + ". Previously these death messages used list for " + oldmobtypename + ".");
+					}
+					else //if it does not
+					{
+						sender.sendMessage(ChatColor.RED + "Cannot find death message sharing for mob " + args[1] + ".");
+						sender.sendMessage(ChatColor.RED + "/mofmsg delshare [mobtype]\nUse /mofmsg viewshare to see current death message sharing.");
+					}
+				}
+				//TODO: test item report conversion commands
+				else if (args[0].equalsIgnoreCase("additemreport"))
+				{
+					// /mofmsg itemreport <mobtypename> - converts msg.<mobtypename> to msg.<mobtypename>.noitem and adds placeholder for msg.<mobtypename>.item
+					if (getConfig().isList("msg."+args[1]))
+					{
+						List<String> deathMsgStringList = getConfig().getStringList("msg."+args[1]);
+						getConfig().set("msg."+args[1], null);
+						getConfig().createSection("msg."+args[1]+".noitem");
+						getConfig().set("msg."+args[1]+".noitem", deathMsgStringList);
+						getConfig().createSection("msg."+args[1]+".item");
+						List<String> placeholdItemList = new LinkedList<String>();
+						placeholdItemList.add("with &i");
+						getConfig().set("msg."+args[1]+".item", placeholdItemList);
+						sender.sendMessage(ChatColor.GREEN + "Converted " + args[1] + " to use item reporting.");
+						getLogger().info("[MOF] " + sender.getName() + " converted death message category at msg." + args[1] + " to use item reporting.");
+					}
+					else if (getConfig().isList("msg."+args[1]+".noitem") && getConfig().isList("msg."+args[1]+".item"))
+					{
+						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " are already configured for item reporting.");
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " is either not a standalone or item-reporting list.");
+					}
+				}
+				else if (args[0].equalsIgnoreCase("delitemreport"))
+				{
+					// /mofmsg itemreport <mobtypename> - converts msg.<mobtypename> to msg.<mobtypename>.noitem and adds placeholder for msg.<mobtypename>.item
+					if (getConfig().isList("msg."+args[1]))
+					{
+						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " are already not configured for item reporting.");
+						
+					}
+					else if (getConfig().isList("msg."+args[1]+".noitem") && getConfig().isList("msg."+args[1]+".item"))
+					{
+						List<String> deathMsgStringList = getConfig().getStringList("msg."+args[1]+".noitem");
+						getConfig().set("msg."+args[1]+".noitem", null);
+						getConfig().set("msg."+args[1]+".item", null);
+						getConfig().createSection("msg."+args[1]);
+						getConfig().set("msg."+args[1], deathMsgStringList);
+						sender.sendMessage(ChatColor.GREEN + "Removed item reporting from " + args[1] + ".");
+						getLogger().info("[MOF] " + sender.getName() + " removed item reporting from death message category at msg." + args[1] + ".");
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " is either not a standalone or item-reporting list.");
+					}
+				}
 				else
 				{
-					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
 				}
 				return true;
 			}
@@ -430,9 +580,73 @@ public final class MaskOfFutures extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "msg."+args[1]+" is not a valid config key");
 					}
 				}
+				else if (args[0].equalsIgnoreCase("additem"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg additem [item name in Material enum]\nFor the list of Material (ie. item) names, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html.");
+				}
+				else if (args[0].equalsIgnoreCase("addshare"))
+				{
+					// /mofmsg addshare <mobtypename1> <mobtypename2 whose list to use for kills by mobtypename1>
+					if (args.length == 3)
+					{
+						if (getConfig().contains("listShare."+args[1])) //if the mob is already configured to use a list
+						{
+							String currentmobtypename = getConfig().getString("listShare."+args[1]);
+							sender.sendMessage(ChatColor.RED + "Death messages for "+args[1] + " currently uses list for " + currentmobtypename + ".\nUse /mofmsg delshare [mobtypename] to remove it before re-adding it with the correct death message list to use.");
+						}
+						else
+						{
+							getConfig().createSection("listShare."+args[1]);
+							sender.sendMessage(ChatColor.GREEN + "Added " + "listShare."+args[1] + " to config with setting " + args[2] + ". Death messages for " + args[1] + " will now use list for " + args[2] + ".");
+							getConfig().set("listShare."+args[1], args[2]);
+							getLogger().info("[MOF] " + sender.getName() + " configured deaths by " + args[1] + " to use message list for " + args[2] + ".");
+						}
+					}
+					else
+					{
+						//display error message with correct syntax
+						sender.sendMessage(ChatColor.RED + "/mofmsg addshare [killer mobtype] [mobtype whose death message list to use]\nFor list of mob type names recognized, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html.");
+					}
+				}
+				else if (args[0].equalsIgnoreCase("renamecat"))
+				{
+					// intended syntax: /mofmsg renamecat <cat1_oldname> <cat_newname>
+					if (args.length == 3)
+					{
+						//check to make sure <cat_newname> does not already exist and have more than one entry
+						//(suggesting it is not from the default config)
+						//if it does, stop and notify user
+						if (getConfig().contains("msg."+args[2]) && getConfig().getStringList("msg."+args[2]).size() > 1)
+						{
+								sender.sendMessage(ChatColor.RED + "Category " + args[2] + " exists and has more than one entry.\nUse delcat to remove this first before renaming " + args[1] + ".");
+						}
+						else if (!getConfig().contains("msg."+args[1])) //if <cat1_oldname> does not exist
+						{
+							sender.sendMessage(ChatColor.RED + "Category " + args[1] + " does not exist.");
+						}
+						else
+						{
+							//create <cat_newname>, get String list from <cat_oldname> and store it in <cat_newname>, then delete <cat_oldname>
+							List<String> oldCatList = getConfig().getStringList("msg."+args[1]);
+							//if the destination section does not exist, create it
+							if (!getConfig().contains("msg."+args[2]))
+							{
+								getConfig().createSection("msg."+args[2]);
+							}
+							getConfig().set("msg."+args[2], oldCatList);
+							getConfig().set("msg."+args[1], null);
+							sender.sendMessage(ChatColor.GREEN + "Renamed category " + "msg."+args[1] + " to " + "msg."+args[2] + ".");
+							getLogger().info("[MOF] " + sender.getName() + " renamed death message category from msg." + args[1] + " to msg." + args[2] + ".");
+						}
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "/mofmsg renamecat [cat_oldname] [cat_newname]");
+					}
+				}
 				else
 				{
-					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat] [category] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
 				}
 				return true;
 			}
@@ -664,6 +878,9 @@ public final class MaskOfFutures extends JavaPlugin{
 		return false;
 	}
 	
+	//Displays to a command sender a master-level list of death message categories 
+	//(ie. all possible keys under "msg." in the config)
+	//input: the CommandSender that (indirectly) called this method (with /mofmsg ...)
 	public void displayDeathMessageList(CommandSender sender)
 	{
 		AbstractSet<String> deathmsglist = (AbstractSet<String>) getConfig().getConfigurationSection("msg").getKeys(false);
@@ -676,6 +893,13 @@ public final class MaskOfFutures extends JavaPlugin{
 		sender.sendMessage(ChatColor.AQUA + "Available death message categories: " + keylist);
 	}
 	
+	//this method toggles a player's ability to see vanilla or custom death messages
+	//by checking if the player's UUID is in the old message player list
+	//if it is on the list already, this method removes it
+	//if it is missing from the list, this method adds it
+	//metadata is also given to/removed from the player so the plugin doesn't always need to check the old msg list file to see if the player is on it
+	//input oldMsgPlayerList: the String List of player UUIDs to send vanilla-style death messages to
+	//input p: the Player to either add to or remove from the old message player list
 	public void togglePlayerOnList(List<String> oldMsgPlayerList, Player p)
 	{
 		//check if the player's UUID is in the list already
@@ -718,4 +942,52 @@ public final class MaskOfFutures extends JavaPlugin{
 		*/
 	}
 	
+	
+	//TODO: test this if it ends up being used.
+	//Reformats an existing list of no-item-reporting death messages into ones that can
+	//accommodate item reporting - this will move the list of death messages found in
+	//msg.<mobtypename> to msg.<mobtypename>.noitem, then create a msg.<mobtypename>.item
+	//with one default element.
+	//input mobtypename: the String name of the mob type of a mob that can kill the player
+	//input sender: the CommandSender that issued the command that calls this method
+	public void addItemReporting(String mobtypename, CommandSender sender)
+	{
+		//is it possible to check to make sure that mobtypename corresponds to a LivingEntity?
+		//this will add another layer of protection against miscalling this method, 
+		//eg. prevent this from being called on a list for kill by status effect cloud
+		//TODO: checks to prevent misuse of this method
+		
+		//move death messages to .noitem list, then create a .item list with a default element
+		List<String> deathMsgsList = getConfig().getStringList("msg."+mobtypename);
+		getConfig().set("msg."+mobtypename, null);
+		getConfig().createSection("msg."+mobtypename+".noitem");
+		getConfig().set("msg."+mobtypename+".noitem", deathMsgsList);
+		sender.sendMessage(ChatColor.GREEN + "Changed death message for " + mobtypename + " to use item reporting.");
+		getConfig().createSection("msg."+mobtypename+".item");
+		List<String> newItemList = new LinkedList<String>();
+		newItemList.add("with &i");
+		getConfig().set("msg."+mobtypename+".item", newItemList);
+		getLogger().info("[MOF] " + sender.getName() + " changed msg." + mobtypename + " to use item reporting.");
+	}
+	
+	//TODO: test this if it ends up being used.
+	//Reformats an existing pair of item/noitem lists of item-reporting death messages into ones
+	//that ignore item reporting - this will move the list of death messages found in
+	//msg.<mobtypename>.noitem to msg.<mobtypename>, then delete the msg.<mobtypename>.item
+	//list.
+	//input mobtypename: the String name of the mob type of a mob that can kill the player
+	//input sender: the CommandSender that issued the command that calls this method
+	public void removeItemReporting(String mobtypename, CommandSender sender)
+	{
+		//TODO: checks to prevent misuse of this method
+		
+		//remove .item and .noitem lists and move death messages to list under msg.<mobtypename> directly
+		List<String> deathMsgsList = getConfig().getStringList("msg."+mobtypename+".noitem");
+		getConfig().set("msg."+mobtypename+".noitem", null);
+		getConfig().set("msg."+mobtypename+".item", null);
+		getConfig().createSection("msg."+mobtypename);
+		getConfig().set("msg."+mobtypename, deathMsgsList);
+		sender.sendMessage(ChatColor.GREEN + "Removed item reporting in death messages for " + mobtypename + ".");
+		getLogger().info("[MOF] " + sender.getName() + " removed item reporting from msg." + mobtypename + ".");
+	}
 }

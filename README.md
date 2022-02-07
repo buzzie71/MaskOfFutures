@@ -121,7 +121,7 @@ There exist commands intended for server administrators to alter the death messa
    - `/mofmsg viewshare` will show all the mob list sharing currently in the config in the form `[cause1] -> [cause2]`.  `[cause1]` refers to the kill cause, while `[cause2]` refers to the kill cause whose death message list is used for kills by `[cause1]`.  Both `[cause1]` and `[cause2]` follow the death cause naming convention of the plugin, which for mobs will generally follow the Spigot EntityType enum naming convention.
    - `/mofmsg addshare [cause1] [cause2]` will add the specified death message sharing to the `listShare` list in the config.  Naming conventions for `[cause1]` and `[cause2]` are described in the preceding description for `/mofmsg viewshare`.
    - `/mofmsg delshare [number]` will remove the numbered entry according to the list shown with `/mofmsg viewshare`, and thus remove the use of `[cause2]` death messages for kills by `[cause1]`.
-
+   - `/mofmsg clearitemmsg [category]` will clear the `msg.[category].item` list and add a blank string ("").  This effectively prevents appending of a string to report the item held by a mob (if it is holding one), but item reporting can still be achieved by using `&i` in messages in the `noitem` list.
 
 ===
 Undead horse spawning and taming
@@ -155,6 +155,19 @@ You can then build MoF by running `mvn`.
 ===
 Changelog
 ===
+0.16.1
+   - Made changes to the death message referencing for projectile kills to follow the format <Projectile>.<Source>.  Naming format for projectiles follows the subinterface names for Projectile in the Spigot API.  Naming format for living entity projectile sources (ie. not dispensers) follows the EntityType enum in the Spigot API.  Dispenser projectile sources are simply named "dispenser" as the source.  Updates to certain death message categories to follow the new format are recommended (llama -> llama_spit.llama, shulker -> shulker_bullet.shulker, fireball.blaze -> small_fireball.blaze, fireball.dispenser, small_fireball.dispenser, pearl -> ender_pearl.player, firework -> firework.player, potion.* -> splash_potion.*).  Additional handling for deaths by wither skull projectiles (category wither_skull.wither) should also be added.
+   - Made changes to death message handling for deaths by contact with another block (cactus, sweet berry bush, pointed dripstone) to follow the format contact.<block name>.  Updates to certain death message categories to follow the new format are recommended (cactuspoke -> contact.cactus, bush -> contact.sweet_berry_bush).
+   - Made changes to death message handling for deaths by getting crushed by a falling block (eg. anvil, pointed dripstone).  Updates to certain death message categories to follow the new format are recommended (anvil -> falling_block.anvil).
+   - List sharing has been reworked to allow sharing of death messages for death reasons that would require a period (eg. "arrow.stray").  
+   - List sharing has also been extended to handle non-mob reasons (eg. "falling_block.chipped_anvil" can be configured to pull from "falling_block.anvil").
+   - Added the ability to clear the item message list (`clearitemmsg`) and replace it with a blank string.  This prevents appending a string to report the item used to kill a player in the death message.  This is useful for per-message item reporting by using `&i` in the `noitem` messages instead.
+   - Removed automatic formatting of keys `itemMsg` and `listShare` from the previous update.
+   - Added code to automatically update the `listShare` format in the config to the new format used in this version - previously it used keys with Strings to keep track of list sharing, but now has been updated to use a List of Strings.  A notification that the conversion has taken place will appear in the console when the plugin is enabled.  No additional user action is necessary for the conversion to take place.
+   - Various tweaks and code cleanups.
+   - This plugin was built with spigot-api-1.18.1-R0.1-SNAPSHOT.jar obtained on January 16, 2022 at 9:26 AM PST.
+
+
 0.16
    - Keys `itemMsg` and `listShare` are automatically added with data consistent to what is in config.yml on plugin startup, if they do not exist in the config.  
    - Cleanup of item message handling.  Existing versions of the plugin should add the key itemMsg to the config, and add strings "[Material]" to the itemMsg list. [Material] corresponds to the Material enum of items that should cause a death message to be reported as a special item kill message when held by the killer (for mobs that carry an item in their main hand).  To preserve previous functionality, itemMsg should be added in as a new key, with a String list containing "cod", "glowstone", "glowstone_dust", and "feather".  Additionally, the key msg.rawfish should be altered to msg.cod, and the String list under msg.glowstone should be copied under a new key named msg.glowstone_dust.  For an example of how to implement this, see config.yml.  Note that a default itemMsg will be created on plugin startup if it does not exist in the config, but msg.glowstone_dust is not automatically created.

@@ -247,13 +247,15 @@ msg:
    firework:
       - "&e&p&3 went out with a bang"
       
-   llama:
+   llama_spit:
+      llama:
       - "&e&p&3 was slain by &e&z&3"
    
    enderdragon:
       - "&e&p&3 was slain by &e&z&3"
       
-   shulker:
+   shulker_bullet:
+      shulker:
       - "&e&p&3 was slain by &e&z&3"
       
    polar_bear:
@@ -287,11 +289,11 @@ msg:
    fly_into_wall:
       - "&e&p&3 experienced kinetic energy"
       
-   cactuspoke:
-      - "&e&p &3was pricked to death"
-      
-   bush:
-      - "&e&p&3 was poked to death by a sweet berry bush"
+   contact:
+      cactus:
+         - "&e&p &3was pricked to death"
+      sweet_berry_bush:
+         - "&e&p&3 was poked to death by a sweet berry bush"
       
    lava:
       - "&e&p &3tried to swim in lava"
@@ -331,8 +333,9 @@ msg:
    magic:
       - "&e&p &3was magic'd dead by &eHerobrine&3"
       
-   anvil:
-      - "&e&p &3was squashed by a falling &eAnvil&3"
+   falling_block:
+      anvil:
+         - "&e&p &3was squashed by a falling &eAnvil&3"
       
    endercrystal:
       - "&e&p&3 was blown up by &eEnder Crystal&3"

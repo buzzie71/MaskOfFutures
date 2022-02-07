@@ -1,6 +1,7 @@
 package com.gmail.buzziespy.MaskOfFutures;
 
 import java.io.File;
+import java.util.AbstractSet;
 
 /*
  * Comments for MoF have been added to aid in maintainability.
@@ -33,6 +34,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -84,6 +86,7 @@ import org.bukkit.entity.Piglin;
 import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.PolarBear;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.PufferFish;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Ravager;
@@ -144,6 +147,7 @@ public final class BeingListener implements Listener{
 			//check for listShare and itemMsg keys; if the config does not contain them, create them
 			//apparently if these don't exist the config will pull the values from the default config?
 			//so this code may be unnecessary
+			/* commented out - enough time has passed that config users should have this already
 			if (!plugin.getConfig().contains("itemMsg"))
 			{
 				plugin.getConfig().createSection("itemMsg");
@@ -168,7 +172,26 @@ public final class BeingListener implements Listener{
 				plugin.getConfig().set("listShare.wither_skeleton", "skeleton");
 				plugin.getLogger().info(ChatColor.GREEN + "Added listShare key with default settings since it was absent in the config");
 				plugin.saveConfig();
+			}*/
+			//code to convert previous format of listShare key-string pairs to new format of string list
+			if (!plugin.getConfig().isList("listShare") && plugin.getConfig().contains("listShare")) //assume that if listShare is not a list (presumably of strings) then it's using the old version
+			{
+				//get all the different keys that are in there, process share origins and targets into new format
+				AbstractSet<String> sharelist = (AbstractSet<String>) plugin.getConfig().getConfigurationSection("listShare").getKeys(false);
+				Iterator<String> it = sharelist.iterator();
+				List<String> newShareList = new LinkedList<String>();
+				while (it.hasNext())
+				{
+					String keyToAdd = it.next();
+					newShareList.add(keyToAdd+","+plugin.getConfig().getString("listShare."+keyToAdd));
+				}
+				//clear listShare and then remake it as a string list with newShareList
+				plugin.getConfig().set("listShare", null);
+				plugin.getConfig().createSection("listShare");
+				plugin.getConfig().set("listShare", newShareList);
+				plugin.getLogger().info("[MOF] listShare was converted from old format to new format.");
 			}
+			
 			//save copy
 			plugin.saveDefaultConfig();
 		}
@@ -458,6 +481,8 @@ public final class BeingListener implements Listener{
 			//plugin.getLogger().info("Original death message: " + e.getDeathMessage());
 			//plugin.getLogger().info("Predicted default message?: " + (e.getDeathMessage().equals(victim.getName() + " died")));
 			
+			
+			
 			//Handle zapping by TestPlugin (personal project, not a nerd plugin) first
 			if (victim.hasMetadata("TestPlugin.lightningKill"))
 			{
@@ -487,21 +512,36 @@ public final class BeingListener implements Listener{
 				if (!plugin.getConfig().getBoolean("death-msgs"))
 				{
 					plugin.getLogger().info("Last damager: " + ee.getDamager().getType().toString());
+					
+					//DEBUG: for projectile death message key format
+					if (ee.getDamager() instanceof Projectile)
+					{
+						ProjectileSource ps = ((Projectile)ee.getDamager()).getShooter();
+						plugin.getLogger().info("Expected key for projectile kill: " + getFormattedProjectileDeathCat((Projectile)ee.getDamager(),ps));
+					}
 				}
 
+				
+				
 				String killerMob = ee.getDamager().getType().toString().toLowerCase();
+				//TODO: New handling of generic projectile kills
+				if (ee.getDamager() instanceof Projectile)
+				{
+					Projectile p = (Projectile)ee.getDamager();
+					killerMob = getFormattedProjectileDeathCat(p,p.getShooter());
+				}
+				
 				//DEBUG
-				plugin.getLogger().info("Mob that killed player: " + ee.getDamager().getType().toString().toLowerCase());
+				//plugin.getLogger().info("Mob that killed player: " + ee.getDamager().getType().toString().toLowerCase());
 				
 				//Intercept the mob type and redirect to another death message list if it is specified in the config
-				killerMob = getProcessedMobType(killerMob);
+				//this has been refactored to occur as part of getDeathReason() (all method variants)
+				//killerMob = getProcessedMobType(killerMob);
 				
 				//thorns exception; if died to thorns handle this first
 				//I think this only happens with LivingEntity entity kills?
 				if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
 				{
-					//DEBUG
-					//plugin.getLogger().info("Thorns kill!");
 					LivingEntity z = (LivingEntity)ee.getDamager();
 					ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 					dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
@@ -524,189 +564,29 @@ public final class BeingListener implements Listener{
 				}
 				else
 				{  //handle hostile mob kills here
-					/*
-					 * NOTE: Use the getDeathReason with the ItemStack parameter if you think a weapon can be
-					 * used in the kill.  If you use that, you MUST specify item/noitem in the corresponding
-					 * config entry!  Otherwise console will vomit exceptions because it can't find
-					 * configkey.noitem and configkey.item in the config.
-					 */
-					//Zombie kill
-					/*if (ee.getDamager() instanceof Zombie && !(ee.getDamager() instanceof PigZombie))
-					{
-
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("zombie", e.getEntity().getName(), z, itemWeapon));
-						}
-						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
-						{
-							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
-
-						//placeSignFromReason("zombie", signpoint, e.getEntity());
-
-					}*/
-
-					//Skeleton kill
-					/*else if (ee.getDamager() instanceof Skeleton)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("skeleton", e.getEntity().getName(), z, itemWeapon));
-						}
-						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
-						{
-							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
-						//placeSignFromReason("skeleton", signpoint, e.getEntity());
-					}*/
-
-					//Zombie Pigman kill
-					/*else if (ee.getDamager() instanceof PigZombie)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("pigzombie", e.getEntity().getName(), z, itemWeapon));
-						}
-						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
-						{
-							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
-						//placeSignFromReason("pigzombie", signpoint, e.getEntity());
-					}*/
-
-					//Creeper kill
-					/*else if (ee.getDamager() instanceof Creeper)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("creeper", e.getEntity().getName(), z));
-						//placeSignFromReason("creeper", signpoint, e.getEntity());
-					}*/
-					//Phantom kills
-					/*else if (ee.getDamager() instanceof Phantom)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("phantom", e.getEntity().getName(), z));
-					}*/
 					//Anvil kill
 					//else 
 					if (ee.getDamager() instanceof FallingBlock)
 					{
-						dispatchDeathMessage(e, getDeathReason("anvil", e.getEntity().getName()));
+						FallingBlock fb = (FallingBlock)ee.getDamager();
+						String blockType = fb.getMaterial().toString().toLowerCase();
+						//DEBUG:
+						//plugin.getLogger().info("key: falling_block."+blockType);
+						dispatchDeathMessage(e, getDeathReason("falling_block."+blockType, e.getEntity().getName()));
 						//placeSignFromReason("anvil", signpoint, e.getEntity());
 					}
-					//Slime kill
-					/*else if (ee.getDamager() instanceof Slime)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						String killer = (z instanceof MagmaCube) ? "magmacube" : "slime";
-						dispatchDeathMessage(e, getDeathReason(killer, e.getEntity().getName(), z));
-					}*/
-					//Spider kill
-					/*else if (ee.getDamager() instanceof Spider)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						String killer = (z instanceof CaveSpider) ? "cavespider" : "spider";
-						dispatchDeathMessage(e, getDeathReason(killer, e.getEntity().getName(), z));
-						//placeSignFromReason("spider", signpoint, e.getEntity());
-					}*/
+					
 					//Witch kill
-					else if (ee.getDamager() instanceof Witch)
+					/*else if (ee.getDamager() instanceof Witch)
 					{
 						LivingEntity z = (LivingEntity)ee.getDamager();
 						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
 						dispatchDeathMessage(e, getDeathReason("witch", e.getEntity().getName(), z, itemWeapon));
 						//placeSignFromReason("witch", signpoint, e.getEntity());
-					}
-					//Wolf kill
-					/*else if (ee.getDamager() instanceof Wolf)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("wolf", e.getEntity().getName(), z));
-						//placeSignFromReason("wolf", signpoint, e.getEntity());
 					}*/
-					//Blaze kill
-					/*else if (ee.getDamager() instanceof Blaze)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("blaze", e.getEntity().getName(), z));
-						//placeSignFromReason("blaze", signpoint, e.getEntity());
-					}*/
-					//Drowned kill
-					/*else if (ee.getDamager() instanceof Drowned)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("drowned", e.getEntity().getName(), z, itemWeapon));
-						}
-						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
-						{
-							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
-
-						//placeSignFromReason("drowned", signpoint, e.getEntity());
-					}*/
-					//Silverfish kill
-					/*else if (ee.getDamager() instanceof Silverfish)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("silverfish", e.getEntity().getName(), z));
-						//placeSignFromReason("silverfish", signpoint, e.getEntity());
-					}*/
-					//Iron golem kills
-					/*else if (ee.getDamager() instanceof IronGolem)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("irongolem", e.getEntity().getName(), z));
-						//placeSignFromReason("irongolem", signpoint, e.getEntity());
-					}*/
-					//Enderman kills
-					/*else if (ee.getDamager() instanceof Enderman)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						if (!plugin.getConfig().getBoolean("death-msgs"))
-						{
-							plugin.getLogger().info(getDeathReason("enderman", e.getEntity().getName(), z));
-						}
-						else
-						{
-							e.setDeathMessage(getDeathReason("enderman", e.getEntity().getName(), z));
-						}
-					}*/
-					//Enderdragon kills
-					/*else if (ee.getDamager() instanceof EnderDragon)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("enderdragon", e.getEntity().getName(), z));
-					}*/
-					//Rabbit kills
-					/*else if (ee.getDamager() instanceof Rabbit)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("rabbit", e.getEntity().getName(), z));
-					}*/
-					//Endermite kills
-					/*else if (ee.getDamager() instanceof Endermite)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("endermite", e.getEntity().getName(), z));
-					}*/
-					//Polar Bear kills
-					/*else if (ee.getDamager() instanceof PolarBear)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("polarbear", e.getEntity().getName(), z));
-					}*/
+					
 					//Shulker kills
-					else if (ee.getDamager() instanceof ShulkerBullet)
+					/*else if (ee.getDamager() instanceof ShulkerBullet)
 					{
 						//This method assumes that Shulkers are the sole shooter of their bullets
 						//if other mobs (eg. players) can fire these, the config organization may need
@@ -719,23 +599,8 @@ public final class BeingListener implements Listener{
 							Shulker w = (Shulker)le;
 							dispatchDeathMessage(e, getDeathReason("shulker", e.getEntity().getName(), w));
 						}
-					}
-					//Guardian kill
-					/*if (ee.getDamager() instanceof Guardian)
-					{
-
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("guardian", e.getEntity().getName(), z));
-						}
-						else if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.THORNS))
-						{
-							dispatchDeathMessage(e, getDeathReason("thorns", e.getEntity().getName(), z, itemWeapon));
-						}
-						//placeSignFromReason("zombie", signpoint, e.getEntity());
 					}*/
+					
 					//Wither kill
 					else if (ee.getDamager() instanceof Wither)
 					{
@@ -750,12 +615,9 @@ public final class BeingListener implements Listener{
 						}
 					}
 					//Wither skull kill - seems this is registered differently from Wither
-					else if (ee.getDamager() instanceof WitherSkull)
+					/*else if (ee.getDamager() instanceof WitherSkull)
 					{
 						WitherSkull tp = (WitherSkull)ee.getDamager();
-						//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
-						//NOTE: Casting projectile shooters as LivingEntities no longer appears to work
-						//LivingEntity le = (LivingEntity)tp.getShooter();
 						ProjectileSource le = (ProjectileSource)tp.getShooter();
 						//plugin.getLogger().info("Projectile source: " + le.toString());
 						if (le instanceof Wither)
@@ -763,9 +625,9 @@ public final class BeingListener implements Listener{
 							Wither w = (Wither)le;
 							dispatchDeathMessage(e, getDeathReason("wither.kill", e.getEntity().getName(), w));
 						}
-					}
+					}*/
 					//arrow kill - note that in 1.13 Trident inherits Arrow, so need to check that the arrow is not a trident
-					else if (ee.getDamager() instanceof Arrow && !(ee.getDamager() instanceof Trident))
+					/*else if (ee.getDamager() instanceof Arrow && !(ee.getDamager() instanceof Trident))
 					{
 						//perhaps change this based on distance of shooter?
 						Arrow arrow = (Arrow)ee.getDamager();
@@ -778,6 +640,7 @@ public final class BeingListener implements Listener{
 							plugin.getLogger().info("Shooter: null");
 						}*/
 						//1.9.2: dispenser exception
+						/*
 						if (arrow.getShooter() instanceof BlockProjectileSource)
 						{
 							dispatchDeathMessage(e, getDeathReason("arrow.dispenser", e.getEntity().getName(), "Dispenser"));
@@ -808,13 +671,11 @@ public final class BeingListener implements Listener{
 							}
 						}
 						
-					}
-					else if (ee.getDamager() instanceof ThrownPotion)
+					}*/
+					/*else if (ee.getDamager() instanceof ThrownPotion)
 					{
 						//perhaps change this based on distance of shooter?
 						ThrownPotion tp = (ThrownPotion)ee.getDamager();
-						//Given the uncertainty over Bukkit's future I will assume deprecated methods are fair game.
-						//NOTE: Casting projectile shooters as LivingEntities no longer appears to work
 						//LivingEntity le = (LivingEntity)tp.getShooter();
 						ProjectileSource le = (ProjectileSource)tp.getShooter();
 						//plugin.getLogger().info("Projectile source: " + le.toString());
@@ -834,8 +695,8 @@ public final class BeingListener implements Listener{
 						{
 							dispatchDeathMessage(e, getDeathReason("potion.dispenser", e.getEntity().getName(), "Dispenser"));
 						}
-					}
-					else if (ee.getDamager() instanceof LargeFireball)
+					}*/
+					/*else if (ee.getDamager() instanceof LargeFireball)
 					{
 						//perhaps change this based on distance of shooter?
 						LargeFireball tp = (LargeFireball)ee.getDamager();
@@ -846,8 +707,8 @@ public final class BeingListener implements Listener{
 							dispatchDeathMessage(e, getDeathReason("fireball.ghast", e.getEntity().getName(), le));
 						}
 
-					}
-					else if (ee.getDamager() instanceof SmallFireball)
+					}*/
+					/*else if (ee.getDamager() instanceof SmallFireball)
 					{
 						//perhaps change this based on distance of shooter?
 						SmallFireball tp = (SmallFireball)ee.getDamager();
@@ -862,12 +723,12 @@ public final class BeingListener implements Listener{
 						{
 							dispatchDeathMessage(e, getDeathReason("fireball.dispenser", e.getEntity().getName()));
 						}
-					}
+					}*/
 					//overzealous pearl suicides
-					else if (ee.getDamager() instanceof EnderPearl)
+					/*else if (ee.getDamager() instanceof EnderPearl)
 					{
 						dispatchDeathMessage(e, getDeathReason("pearl", e.getEntity().getName()));
-					}
+					}*/
 					//TNT kills (eg. in desert temples)
 					else if (ee.getDamager() instanceof TNTPrimed)
 					{
@@ -933,32 +794,6 @@ public final class BeingListener implements Listener{
 							dispatchDeathMessage(e, getDeathReason("cloud.dispenser", e.getEntity().getName(), "Dispenser"));
 						}
 					}
-					//Vex kill
-					/*else if (ee.getDamager() instanceof Vex)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("vex", e.getEntity().getName(), z, itemWeapon));
-						}
-					}*/
-					//Ravager kills
-					/*else if (ee.getDamager() instanceof Ravager)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("ravager", e.getEntity().getName(), z));
-					}*/
-					//Vindicator kill - assuming it cannot wear thorns armor
-					/*else if (ee.getDamager() instanceof Vindicator)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						ItemStack itemWeapon = z.getEquipment().getItemInMainHand();
-						if (victim.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK))
-						{
-							dispatchDeathMessage(e, getDeathReason("vindicator", e.getEntity().getName(), z, itemWeapon));
-						}
-					}*/
 					//Evoker kills - assuming it cannot hold items. Evokers kill by fangs.
 					else if (ee.getDamager() instanceof EvokerFangs)
 					{
@@ -967,7 +802,7 @@ public final class BeingListener implements Listener{
 						dispatchDeathMessage(e, getDeathReason("evoker", e.getEntity().getName(), z));
 					}
 					//Trident kills
-					else if (ee.getDamager() instanceof Trident)
+					/*else if (ee.getDamager() instanceof Trident)
 					{
 						//perhaps change this based on distance of shooter?
 						Trident trident = (Trident)ee.getDamager();
@@ -986,7 +821,7 @@ public final class BeingListener implements Listener{
 						}
 						else//if an entity fired this arrow
 						{*/
-							LivingEntity le = (LivingEntity)trident.getShooter();
+							/*LivingEntity le = (LivingEntity)trident.getShooter();
 							ItemStack itemWeapon = le.getEquipment().getItemInMainHand();
 							if (le instanceof Drowned)
 							{
@@ -998,38 +833,14 @@ public final class BeingListener implements Listener{
 							}
 						//}
 						
-					}
-					//Pufferfish kills
-					/*else if (ee.getDamager() instanceof PufferFish)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("pufferfish", e.getEntity().getName(), z));
-					}*/
-					//Panda kills (aggressive only)
-					/*else if (ee.getDamager() instanceof Panda)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("panda", e.getEntity().getName(), z));
-					}*/
-					//Dolphin kills
-					/*else if (ee.getDamager() instanceof Dolphin)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("dolphin", e.getEntity().getName(), z));
-					}*/
-					//Bee kills
-					/*else if (ee.getDamager() instanceof Bee)
-					{
-						LivingEntity z = (LivingEntity)ee.getDamager();
-						dispatchDeathMessage(e, getDeathReason("bee", e.getEntity().getName(), z));
 					}*/
 					//Firework kills
-					else if (ee.getDamager() instanceof Firework)
+					/*else if (ee.getDamager() instanceof Firework)
 					{
 							dispatchDeathMessage(e, getDeathReason("firework", e.getEntity().getName()));
-					}
+					}*/
 					//Llama kill
-					else if (ee.getDamager() instanceof LlamaSpit)
+					/*else if (ee.getDamager() instanceof LlamaSpit)
 					{
 						LlamaSpit tp = (LlamaSpit)ee.getDamager();
 						ProjectileSource le = (ProjectileSource)tp.getShooter();
@@ -1039,7 +850,7 @@ public final class BeingListener implements Listener{
 							Llama w = (Llama)le;
 							dispatchDeathMessage(e, getDeathReason("llama", e.getEntity().getName(), w));
 						}
-					}
+					}*/
 					//Ender Crystal kills
 					else if (ee.getDamager() instanceof EnderCrystal)
 					{
@@ -1053,6 +864,86 @@ public final class BeingListener implements Listener{
 					
 					//after checking for special kill handling,
 					//use generic method for handling kills
+					//Experimental rewrite
+					else
+					{
+						//if the mob kill will result in a custom message (after accounting for list shares)
+						//then display the appropriate death message
+						String killerMobFinalCat = getProcessedMobType(killerMob);
+						//DEBUG
+						//plugin.getLogger().info("killerMob: " + killerMob + ", killerMobFinalCat: " + killerMobFinalCat);
+						if (plugin.getConfig().contains("msg."+killerMobFinalCat))
+						{
+							//DEBUG
+							//plugin.getLogger().info("Config contains msg." + killerMobFinalCat);
+							if (plugin.getConfig().isList("msg."+killerMobFinalCat))
+							{
+								//DEBUG:
+								//plugin.getLogger().info("Key " + "msg."+killerMob + " contains a death message list");
+								if (ee.getDamager() instanceof Projectile)
+								{
+									Projectile p = (Projectile)ee.getDamager();
+									ProjectileSource pz = p.getShooter();
+									if (pz instanceof LivingEntity)
+									{
+										LivingEntity z = (LivingEntity)pz;
+										dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), z));
+									}
+									else if (pz instanceof BlockProjectileSource) //assume this can only be Dispensers
+									{ 
+										dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), "Dispenser"));
+									}
+									else
+									{
+										//not entirely sure what will cause this case to trigger
+										dispatchDeathMessage(e, getDeathReason("default", e.getEntity().getName()));
+									}
+								}
+								else
+								{
+									LivingEntity z = (LivingEntity)ee.getDamager();
+									dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), z));
+								}
+								return;
+							}
+							else if (plugin.getConfig().isList("msg."+killerMobFinalCat+".noitem") && plugin.getConfig().isList("msg."+killerMobFinalCat+".item"))
+							{
+								//DEBUG:
+								//plugin.getLogger().info("Key " + "msg."+killerMob + " contains death messages list with possible item reporting");
+								LivingEntity z;
+								if (ee.getDamager() instanceof Projectile) 
+								{
+								 //this section of code is primarily to get the living entity to pass into getDeathReason()
+								 //note that projectile kills by dispenser cannot be handled in here normally (no reason to have .noitem and .item lists for dispenser projectile kills) 
+									Projectile p = (Projectile)ee.getDamager();
+									ProjectileSource pz = p.getShooter();
+									if (pz instanceof LivingEntity)
+									{
+										z = (LivingEntity)pz;
+									}
+									else
+									{
+										z = null; //this should not happen I think; if code gets here then it should be a LivingEntity barring config mistake 
+									}
+								}
+								else
+								{
+									z = (LivingEntity)ee.getDamager();
+								}
+								dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), z, z.getEquipment().getItemInMainHand()));
+								return;
+							}
+						}
+						else //otherwise don't dispatch death message and log some debug info to console
+						{
+							plugin.getLogger().info("Key " + "msg."+killerMobFinalCat + " does not contain death messages");
+							//Do not dispatch a death message - vanilla death message will draw attention to what's missing
+							//and the line in console will also provide a clue about what is needed
+							plugin.getLogger().info("Death reason: " + e.getEntity().getLastDamageCause().getCause());
+							plugin.getLogger().info("Last damager: " + ee.getDamager().getType().toString());
+						}
+					}
+					/*
 					else if (plugin.getConfig().contains("msg."+killerMob))
 					{
 						//DEBUG:
@@ -1061,14 +952,56 @@ public final class BeingListener implements Listener{
 						{
 							//DEBUG:
 							//plugin.getLogger().info("Key " + "msg."+killerMob + " contains a death message list");
-							dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), (LivingEntity)ee.getDamager()));
+							if (ee.getDamager() instanceof Projectile)
+							{
+								Projectile p = (Projectile)ee.getDamager();
+								ProjectileSource pz = p.getShooter();
+								if (pz instanceof LivingEntity)
+								{
+									LivingEntity z = (LivingEntity)pz;
+									dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), z));
+								}
+								else if (pz instanceof BlockProjectileSource) //assume this can only be Dispensers
+								{ 
+									dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), "Dispenser"));
+								}
+								else
+								{
+									//not entirely sure what will cause this case to trigger
+									dispatchDeathMessage(e, getDeathReason("default", e.getEntity().getName()));
+								}
+							}
+							else
+							{
+								LivingEntity z = (LivingEntity)ee.getDamager();
+								dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), z));
+							}
 							return;
 						}
 						else if (plugin.getConfig().isList("msg."+killerMob+".noitem") && plugin.getConfig().isList("msg."+killerMob+".item"))
 						{
 							//DEBUG:
 							//plugin.getLogger().info("Key " + "msg."+killerMob + " contains death messages list with possible item reporting");
-							LivingEntity z = (LivingEntity)ee.getDamager();
+							LivingEntity z;
+							if (ee.getDamager() instanceof Projectile) 
+							{
+							 //this section of code is primarily to get the living entity to pass into getDeathReason()
+							 //note that projectile kills by dispenser cannot be handled in here normally (no reason to have .noitem and .item lists for dispenser projectile kills) 
+								Projectile p = (Projectile)ee.getDamager();
+								ProjectileSource pz = p.getShooter();
+								if (pz instanceof LivingEntity)
+								{
+									z = (LivingEntity)pz;
+								}
+								else
+								{
+									z = null; //this should not happen I think; if code gets here then it should be a LivingEntity barring config mistake 
+								}
+							}
+							else
+							{
+								z = (LivingEntity)ee.getDamager();
+							}
 							dispatchDeathMessage(e, getDeathReason(killerMob, e.getEntity().getName(), z, z.getEquipment().getItemInMainHand()));
 							return;
 						}
@@ -1085,7 +1018,7 @@ public final class BeingListener implements Listener{
 						//and the line in console will also provide a clue about what is needed
 						plugin.getLogger().info("Death reason: " + e.getEntity().getLastDamageCause().getCause());
 						plugin.getLogger().info("Last damager: " + ee.getDamager().getType().toString());
-					}
+					}*/
 				}
 			}
 			else //handle all non-entity-related deaths here
@@ -1123,15 +1056,16 @@ public final class BeingListener implements Listener{
 				{
 					//as of 1.14, this can be triggered by either cactus or berry bush, so need to differentiate between them using EntityDamageByBlockEvent
 					EntityDamageByBlockEvent ebe = (EntityDamageByBlockEvent)victim.getLastDamageCause();
-					String killingBlock = ebe.getDamager().getType().toString();
-					if (killingBlock.equalsIgnoreCase("cactus"))
+					String killingBlock = ebe.getDamager().getType().toString().toLowerCase();
+					dispatchDeathMessage(e, getDeathReason("contact."+killingBlock, e.getEntity().getName()));
+					/*if (killingBlock.equalsIgnoreCase("cactus"))
 					{
 						dispatchDeathMessage(e, getDeathReason("cactuspoke", e.getEntity().getName()));
 					}
 					else if (killingBlock.equalsIgnoreCase("sweet_berry_bush"))
 					{
 						dispatchDeathMessage(e, getDeathReason("bush", e.getEntity().getName()));
-					}
+					}*/
 				}
 				else if (lastHit.equals(EntityDamageEvent.DamageCause.FIRE_TICK) || lastHit.equals(EntityDamageEvent.DamageCause.FIRE))
 				{
@@ -1155,8 +1089,9 @@ public final class BeingListener implements Listener{
 		//    (ie. "msg.<reason>" should exist in the config) 
 		//input playerName: the String of the victim player's name  
 		//output: the formatted custom death message, with victim name added into the message
-		public static String getDeathReason(String reason, String playerName)
+		public static String getDeathReason(String reason_raw, String playerName)
 		{
+			String reason = getProcessedMobType(reason_raw);
 			List<String> deathReasonList = plugin.getConfig().getStringList("msg." + reason);
 			int index = (int)(Math.random()*deathReasonList.size());
 			String s = deathReasonList.get(index);
@@ -1173,55 +1108,14 @@ public final class BeingListener implements Listener{
 		//input playerName: the String of the victim player's name 
 		//input killerName: the LivingEntity that killed the victim player 
 		//output: the formatted custom death message, with victim name and killer name added into the message
-		public static String getDeathReason(String reason, String playerName, LivingEntity killerName)
+		public static String getDeathReason(String reason_raw, String playerName, LivingEntity killerName)
 		{
+			String reason = getProcessedMobType(reason_raw);
 			List<String> deathReasonList = plugin.getConfig().getStringList("msg." + reason);
 			int index = (int)(Math.random()*deathReasonList.size());
 			String s = deathReasonList.get(index);
 			s = s.replace(Matcher.quoteReplacement("&p"), playerName);
 			String mobname = getProcessedMobName(killerName);
-			/*String mobname = killerName.getType().toString().toLowerCase();
-			mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
-
-			//Some mob names are reported with underscores - need to modify the mobname so they
-			//don't actually appear unless intentionally named that way (eg. with nametag)
-			if (mobname.equals("Magma_cube") && killerName.getCustomName() == null)
-			{
-				mobname = "Magma Cube";
-			}
-			else if (mobname.equals("Iron_golem") && killerName.getCustomName() == null)
-			{
-				mobname = "Iron Golem";
-			}
-			else if (mobname.equals("Cave_spider") && killerName.getCustomName() == null)
-			{
-				mobname = "Cave Spider";
-			}
-			else if (mobname.equals("Ender_dragon") && killerName.getCustomName() == null)
-			{
-				mobname = "Ender Dragon";
-			}
-			else if (mobname.equals("Polar_bear") && killerName.getCustomName() == null)
-			{
-				mobname = "Polar Bear";
-			}
-			else if (mobname.equals("Elder_guardian") && killerName.getCustomName() == null)
-			{
-				mobname = "Elder Guardian";
-			}
-			else if (mobname.equals("Trader_llama") && killerName.getCustomName() == null)
-			{
-				mobname = "Trader Llama";
-			}
-			if (killerName.getCustomName() != null)
-			{
-				mobname = killerName.getCustomName();
-			}
-			if (killerName instanceof Player)  //Player exception, since getCustomName() returns null for player
-			{
-				Player p = (Player)killerName;
-				mobname = p.getName();
-			}*/
 			s = s.replace("&z", mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);
 			return s;
@@ -1235,8 +1129,9 @@ public final class BeingListener implements Listener{
 		//input playerName: the String of the victim player's name 
 		//input killerName: the String of the killing entity's name (eg. for dispensers this may just be "Dispenser") 
 		//output: the formatted custom death message, with victim name and killer name added into the message
-		public static String getDeathReason(String reason, String playerName, String killerName)
+		public static String getDeathReason(String reason_raw, String playerName, String killerName)
 		{
+			String reason = getProcessedMobType(reason_raw);
 			List<String> deathReasonList = plugin.getConfig().getStringList("msg." + reason);
 			int index = (int)(Math.random()*deathReasonList.size());
 			String s = deathReasonList.get(index);
@@ -1255,10 +1150,10 @@ public final class BeingListener implements Listener{
 		//input killerName: the LivingEntity that killed the victim player
 		//input item: the ItemStack held in the killing entity's main hand 
 		//output: the formatted custom death message, with victim name, killer name, and possibly item added into the message
-		public static String getDeathReason(String reason, String playerName, LivingEntity killerName, ItemStack item)
+		public static String getDeathReason(String reason_raw, String playerName, LivingEntity killerName, ItemStack item)
 		{
+			String reason = getProcessedMobType(reason_raw);
 			//Handle special kills first
-			//Code gets repetitive here - feel free to condense!
 			//change this to reference the item list
 			//if the item of the mob is in that list, handle it as an item kill
 			//otherwise handle it as usual
@@ -1308,110 +1203,6 @@ public final class BeingListener implements Listener{
 					break;
 				}
 			}
-			
-			/*if (plugin.getConfig().getStringList("itemMsg").("itemMsg."+item.getType().toString().toLowerCase()))
-			{
-				plugin.getLogger().info("Item was found in itemMsg list: " + "itemMsg."+item.getType().toString().toLowerCase());
-				//handle it as an item kill
-				if (plugin.getConfig().contains("msg."+item.getType().toString().toLowerCase()))
-				{
-					plugin.getLogger().info("Item death message was found: " + "msg."+item.getType().toString().toLowerCase());
-					plugin.getLogger().info("Death message");
-					List<String> deathItemList = plugin.getConfig().getStringList("msg."+item.getType().toString().toLowerCase());
-					int index = (int)(Math.random()*deathItemList.size());
-					String s = deathItemList.get(index);
-					String itemName = "a " + item.getType().toString().toLowerCase();
-					itemName = itemName.replace('_', ' ');
-					if (item.hasItemMeta())
-					{
-						if (item.getItemMeta().hasDisplayName())
-						{
-							itemName = item.getItemMeta().getDisplayName();
-						}
-					}
-					s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
-					s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-					String mobname = getProcessedMobName(killerName);
-					
-					s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
-					s = ChatColor.translateAlternateColorCodes('&', s);
-	
-					return s;
-				}
-			}*/
-			/*
-			if (item.getType().equals(Material.FEATHER))
-			{
-				List<String> deathItemList = plugin.getConfig().getStringList("msg.feather");
-				int index = (int)(Math.random()*deathItemList.size());
-				String s = deathItemList.get(index);
-				String itemName = "a " + item.getType().toString().toLowerCase();
-				itemName = itemName.replace('_', ' ');
-				if (item.hasItemMeta())
-				{
-					if (item.getItemMeta().hasDisplayName())
-					{
-						itemName = item.getItemMeta().getDisplayName();
-					}
-				}
-				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
-				s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-				String mobname = getProcessedMobName(killerName);
-				//replace starting from here
-
-				//end replace
-				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
-				s = ChatColor.translateAlternateColorCodes('&', s);
-
-				return s;
-			}
-
-			else if (item.getType().equals(Material.COD))
-			{
-				List<String> deathItemList = plugin.getConfig().getStringList("msg.cod");
-				int index = (int)(Math.random()*deathItemList.size());
-				String s = deathItemList.get(index);
-				String itemName = "a " + item.getType().toString().toLowerCase();
-				itemName = itemName.replace('_', ' ');
-				if (item.hasItemMeta())
-				{
-					if (item.getItemMeta().hasDisplayName())
-					{
-						itemName = item.getItemMeta().getDisplayName();
-					}
-				}
-				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
-				s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-				String mobname = getProcessedMobName(killerName);
-				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
-				s = ChatColor.translateAlternateColorCodes('&', s);
-
-				return s;
-			}
-
-			else if (item.getType().equals(Material.GLOWSTONE) || item.getType().equals(Material.GLOWSTONE_DUST))
-			{
-				List<String> deathItemList = plugin.getConfig().getStringList("msg.glowstone");
-				int index = (int)(Math.random()*deathItemList.size());
-				String s = deathItemList.get(index);
-				String itemName = "a " + item.getType().toString().toLowerCase();
-				itemName = itemName.replace('_', ' ');
-				if (item.hasItemMeta())
-				{
-					if (item.getItemMeta().hasDisplayName())
-					{
-						itemName = item.getItemMeta().getDisplayName();
-					}
-				}
-				s = s.replaceAll(Matcher.quoteReplacement("&i"), itemName);
-				s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
-				String mobname = getProcessedMobName(killerName);
-
-				s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
-				s = ChatColor.translateAlternateColorCodes('&', s);
-
-				return s;
-			}*/
 
 			//non-special kills
 			List<String> deathReasonList = plugin.getConfig().getStringList("msg." + reason + ".noitem");
@@ -1451,38 +1242,8 @@ public final class BeingListener implements Listener{
 				s = s.replaceAll(Matcher.quoteReplacement("&w"), "");
 			}
 
-			//System.out.println(s);
 			s = s.replaceAll(Matcher.quoteReplacement("&p"), playerName);
 			String mobname = getProcessedMobName(killerName);
-			/*String mobname = killerName.getType().toString().toLowerCase();
-			mobname = (char)(mobname.charAt(0)-32) + mobname.substring(1);
-			if (killerName.getCustomName() != null)
-			{
-				mobname = killerName.getCustomName();
-			}
-
-			//Zombie Pigman exception - if the mobname is calculated to be Pig_zombie and it was not nametagged to be that
-			if (mobname.equals("Pig_zombie") && killerName.getCustomName() == null)
-			{
-				mobname = "Zombie Pigman";
-			}
-			//Zombie Villager exception
-			if (mobname.equals("Zombie_villager") && killerName.getCustomName() == null)
-			{
-				mobname = "Zombie Villager";
-			}
-			//Wither Skeleton exception
-			if (mobname.equals("Wither_skeleton") && killerName.getCustomName() == null)
-			{
-				mobname = "Wither Skeleton";
-			}
-
-			if (killerName instanceof Player)
-			{
-				Player p = (Player)killerName;
-				mobname = p.getName();
-			}*/
-
 			s = s.replaceAll(Matcher.quoteReplacement("&z"), mobname);
 			s = ChatColor.translateAlternateColorCodes('&', s);
 			return s;
@@ -1789,19 +1550,95 @@ public final class BeingListener implements Listener{
 		
 		//different variant of mob name processing method to redirect certain
 		//mob death messages to others, eg. wither skeleton -> skeleton
-		//Input s: the mob type, in lower case (eg. "wither skeleton")
+		//Input s: the original death message reason (eg. wither_skeleton, zombie, falling_block.chipped_anvil)
 		//Output mobname: the name of the mob type whose death message to use given the input mob type name
 		private static String getProcessedMobType(String s)
 		{
+			//by default, pass through the argument death message reason unless there is a list share setting for it
 			String mobname = s;
+			//redo to use list of strings containing list sharing information
+			//if there is at least one list share specified, iterate through it to see if it matches the current death message reason string
+			if (plugin.getConfig().contains("listShare"))
+			{
+				
+				for (String share: plugin.getConfig().getStringList("listShare"))
+				{
+					if (s.equalsIgnoreCase(getShareOrigin(share)))
+					{
+						mobname = getShareTarget(share);
+						//DEBUG
+						//plugin.getLogger().info("Death message for " + s + " uses list for " + mobname);
+						break;
+					}
+				}
+			}
+			
 			//use another death message list if list sharing is specified
-			if (plugin.getConfig().contains("listShare."+s))
+			/*if (plugin.getConfig().contains("listShare."+s))
 			{
 				mobname = plugin.getConfig().getString("listShare."+s);
 				//DEBUG
 				//plugin.getLogger().info("Death message for " + s + " uses list for " + mobname);
-			}
+			}*/
 			return mobname;
+		}
+		
+		//Reformats the killermob string (ie. death message category in config to look for message)
+		//if the entity that kills the player is a projectile (eg. arrow, trident, llama spit, shulker bullet)
+		//This function outputs the string "<projectile>.<projectile source entity/dispenser>"
+		//If for whatever reason the projectile source is neither living entity nor dispenser, outputs "default"
+		private static String getFormattedProjectileDeathCat(Projectile p, ProjectileSource s)
+		{
+			String key;
+			if (s instanceof LivingEntity) //mobs that shoot should fall under this
+			{
+				LivingEntity psle = (LivingEntity)s;
+				key = p.getType().toString().toLowerCase() + "." + psle.getType().toString().toLowerCase();
+			}
+			else if (s instanceof BlockProjectileSource) //this should mostly be for dispensers
+			{
+				//assume it's from a dispenser
+				key = p.getType().toString().toLowerCase() + ".dispenser";
+			}
+			else //just in case it's something else
+			{
+				key = "default"; //hoping this will alert players to this case without dumping too much exception data.
+				//plugin.getLogger().info("The ProjectileSource "+ s.toString() +" was something other than a LivingEntity or BlockProjectileSource!");
+			}
+			
+			return key;
+		}
+		
+		private static String getShareOrigin(String listShareString)
+		{
+			//this method assumes that listShareString is a concatenation of death message categories
+			//eg. "arrow.stray,arrow.skeleton"
+			//this method returns the substring BEFORE the comma, blank string if there is no comma
+			int pos = listShareString.indexOf(",");
+			if (pos >= 0)
+			{
+				return listShareString.substring(0,pos);
+			}
+			else //if it's -1 because there is no comma
+			{
+				return "";
+			}
+		}
+		
+		private static String getShareTarget(String listShareString)
+		{
+			//this method assumes that listShareString is a concatenation of death message categories
+			//eg. "arrow.stray,arrow.skeleton"
+			//this method returns the substring AFTER the comma, blank string if there is no comma
+			int pos = listShareString.indexOf(",");
+			if (pos >= 0)
+			{
+				return listShareString.substring(pos+1,listShareString.length());
+			}
+			else //if it's -1 because there is no comma
+			{
+				return "";
+			}
 		}
 }
 

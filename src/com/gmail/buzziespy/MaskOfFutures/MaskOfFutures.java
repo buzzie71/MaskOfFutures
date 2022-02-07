@@ -275,8 +275,9 @@ public final class MaskOfFutures extends JavaPlugin{
 		{
 			if (args.length == 0 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
 			{
-				sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)");
-				displayDeathMessageList(sender);
+				//sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)");
+				displayGeneralMofmsgSyntax(sender);
+				//displayDeathMessageList(sender);
 				return true;
 			}
 			else if (args.length == 1 && (sender instanceof Player || sender instanceof ConsoleCommandSender))
@@ -311,9 +312,32 @@ public final class MaskOfFutures extends JavaPlugin{
 					}
 					sender.sendMessage(ChatColor.AQUA + keylist);
 				}
-				//TODO: finish coding and testing this (list of shared death message links)
 				else if (args[0].equalsIgnoreCase("viewshare"))
 				{
+					if (getConfig().contains("listShare"))
+					{
+						List<String> listShareList = getConfig().getStringList("listShare");
+						String keylist = "listShare" + "\n======\n";
+						int i = 1;
+						int listShareListCount = listShareList.size(); 
+						for (String shareListEntry: listShareList)
+						{
+							keylist = keylist + (i) + ". " + getShareOrigin(shareListEntry) + " -> " + getShareTarget(shareListEntry);
+							if (i < listShareListCount)
+							{
+								keylist = keylist + "\n";
+							}
+							i=i+1;
+						}
+						sender.sendMessage(ChatColor.AQUA + keylist);
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "No list sharing configuration was found.");
+					}
+					
+					
+					/* old implementation
 					AbstractSet<String> sharemsglist = (AbstractSet<String>) getConfig().getConfigurationSection("listShare").getKeys(false);
 					Iterator<String> it = sharemsglist.iterator();
 					if (it.hasNext())
@@ -331,28 +355,20 @@ public final class MaskOfFutures extends JavaPlugin{
 						}
 						sender.sendMessage(ChatColor.AQUA + keylist);
 					}
-					
-					
-					/*
-					if (it.hasNext())
-					{
-						String keylist = it.next(); //assumes there is always at least one key - this is less likely to be true!
-						while (it.hasNext())
-						{
-							String key = it.next();
-							keylist = keylist + ", " + it.next();
-						}
-						sender.sendMessage(ChatColor.AQUA + "Available death message categories: " + keylist);
-					}*/
 					else
 					{
 						sender.sendMessage(ChatColor.RED + "No list sharing configuration was found.");
-					}
+					}*/
 					
+				}
+				else if (args[0].equalsIgnoreCase("clearitemmsg"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg clearitemmsg [category]\nUse /mofmsg to see list of permissible categories.\nNote the category must have separate .item and .noitem lists for this command to work.");
 				}
 				else
 				{
-					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					//sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare|clearitemmsg] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					displayGeneralMofmsgSyntax(sender);
 				}
 				return true;
 			}
@@ -391,9 +407,12 @@ public final class MaskOfFutures extends JavaPlugin{
 						}
 						else
 						{
-							//TODO: need to separate out between which categories involve items and which don't
 							AbstractSet<String> deathmsglist = (AbstractSet<String>) getConfig().getConfigurationSection("msg." + args[1]).getKeys(false);
 							Iterator<String> it = deathmsglist.iterator();
+							if (!it.hasNext())
+							{
+								sender.sendMessage(ChatColor.RED + "No categories or death messages available for " + args[1] + ".");
+							}
 							String keylist = it.next(); //assumes there is always at least one key in the death messages config
 							while (it.hasNext())
 							{
@@ -418,12 +437,9 @@ public final class MaskOfFutures extends JavaPlugin{
 				}
 				else if (args[0].equalsIgnoreCase("delcat"))
 				{
-					//if (getConfig().isList("msg."+args[1]))
-					//{
-						getConfig().set("msg."+args[1], null);
-						sender.sendMessage(ChatColor.GREEN + "Deleted " + "msg."+args[1] + " from config.");
-						getLogger().info("[MOF] " + sender.getName() + " deleted the death message category at msg." + args[1]);
-					//}
+					getConfig().set("msg."+args[1], null);
+					sender.sendMessage(ChatColor.GREEN + "Deleted " + "msg."+args[1] + " from config.");
+					getLogger().info("[MOF] " + sender.getName() + " deleted the death message category at msg." + args[1]);
 				}
 				else if (args[0].equalsIgnoreCase("additem"))
 				{
@@ -454,6 +470,37 @@ public final class MaskOfFutures extends JavaPlugin{
 				else if (args[0].equalsIgnoreCase("delshare"))
 				{
 					// /mofmsg delshare <mobtypename> (as numbered in the key list)
+					
+					if (hasListShare(args[1])) //if it exists in the config
+					{
+						List<String> listShareList = getConfig().getStringList("listShare");
+						int index = 0;
+						String oldmobtypename = "";
+						for (String listShareListEntry: listShareList)
+						{
+							//DEBUG
+							//getLogger().info("index: " + index + ", args[1]: " + args[1] + ", getShareOrigin(listShareListEntry): " + getShareOrigin(listShareListEntry));
+							if (args[1].equalsIgnoreCase(getShareOrigin(listShareListEntry)))
+							{
+								//DEBUG
+								//getLogger().info("Found matching String entry for " + args[1] + " at index " + index);
+								oldmobtypename = getShareTarget(listShareListEntry);
+								listShareList.remove(index);
+								getConfig().set("listShare", listShareList);
+								break;
+							}
+							index++;
+						}
+						sender.sendMessage(ChatColor.RED + "Deleted " + args[1] + " from listShare list.  Death messages for " + args[1] + " will no longer use list for " + oldmobtypename + ".");
+						getLogger().info("[MOF] " + sender.getName() + " deleted the list sharing for " + args[1] + ". Previously these death messages used list for " + oldmobtypename + ".");
+					}
+					else //if it does not
+					{
+						sender.sendMessage(ChatColor.RED + "Cannot find death message sharing for " + args[1] + ".");
+						sender.sendMessage(ChatColor.RED + "/mofmsg delshare [mobtype]\nUse /mofmsg viewshare to see current death message sharing.");
+					}
+					
+					/* old implementation
 					if (getConfig().contains("listShare."+args[1])) //if it exists in the config
 					{
 						String oldmobtypename = getConfig().getString("listShare."+args[1]);
@@ -465,9 +512,8 @@ public final class MaskOfFutures extends JavaPlugin{
 					{
 						sender.sendMessage(ChatColor.RED + "Cannot find death message sharing for mob " + args[1] + ".");
 						sender.sendMessage(ChatColor.RED + "/mofmsg delshare [mobtype]\nUse /mofmsg viewshare to see current death message sharing.");
-					}
+					}*/
 				}
-				//TODO: test item report conversion commands
 				else if (args[0].equalsIgnoreCase("additemreport"))
 				{
 					// /mofmsg itemreport <mobtypename> - converts msg.<mobtypename> to msg.<mobtypename>.noitem and adds placeholder for msg.<mobtypename>.item
@@ -499,7 +545,6 @@ public final class MaskOfFutures extends JavaPlugin{
 					if (getConfig().isList("msg."+args[1]))
 					{
 						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " are already not configured for item reporting.");
-						
 					}
 					else if (getConfig().isList("msg."+args[1]+".noitem") && getConfig().isList("msg."+args[1]+".item"))
 					{
@@ -516,9 +561,29 @@ public final class MaskOfFutures extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " is either not a standalone or item-reporting list.");
 					}
 				}
+				else if (args[0].equalsIgnoreCase("clearitemmsg"))
+				{
+					//first check whether <category>.item and <category>.noitem exists
+					if (getConfig().isList("msg."+args[1]+".item") && getConfig().isList("msg."+args[1]+".noitem"))
+					{
+						//clear the item message list
+						getConfig().set("msg."+args[1]+".item", null);
+						//remake the item message list with a blank string
+						getConfig().createSection("msg."+args[1]+".item");
+						List<String> defList = new LinkedList<String>();
+						defList.add("");
+						getConfig().set("msg."+args[1]+".item", defList);
+						getLogger().info("[MOF] " + sender.getName() + " cleared item messages at msg." + args[1] + ".item and added a blank string.");
+						sender.sendMessage(ChatColor.GREEN + "Cleared item messages from " + args[1] + ".\nItem message list now contains only a blank string.\nCheck with /mofmsg view " + args[1] + ".item");
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.RED + "Death messages for " + args[1] + " do not use item reporting.\nCannot clear item message list.");
+					}
+				}
 				else
 				{
-					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					displayGeneralMofmsgSyntax(sender);
 				}
 				return true;
 			}
@@ -589,6 +654,32 @@ public final class MaskOfFutures extends JavaPlugin{
 					// /mofmsg addshare <mobtypename1> <mobtypename2 whose list to use for kills by mobtypename1>
 					if (args.length == 3)
 					{
+						if (hasListShare(args[1]))
+						{ //if the mob is already configured to use a list
+							//String currentmobtypename = getConfig().getString("listShare."+args[1]);
+							List<String> listShareList = getConfig().getStringList("listShare");
+							String currentmobtypename = "";
+							for (String listShareListEntry: listShareList)
+							{
+								if (args[1].equalsIgnoreCase(getShareOrigin(listShareListEntry)))
+								{
+									currentmobtypename = getShareTarget(listShareListEntry); 
+									break;
+								}
+							}
+							sender.sendMessage(ChatColor.RED + "Death messages for "+args[1] + " currently uses list for " + currentmobtypename + ".\nUse /mofmsg delshare [mobtypename] to remove it before re-adding it with the correct death message list to use.");
+						}
+						else
+						{ //if the mob isn't configured to use a list, add it
+							String newentry = args[1] + "," + args[2];
+							//DEBUG:
+							//getLogger().info("New listShare entry: " + newentry);
+							
+							addToListShareList(newentry);
+							sender.sendMessage(ChatColor.GREEN + "Added " + "listShare."+args[1] + " to config with setting " + args[2] + ". Death messages for " + args[1] + " will now use list for " + args[2] + ".");
+							getLogger().info("[MOF] " + sender.getName() + " configured deaths by " + args[1] + " to use message list for " + args[2] + ".");
+						}
+						/*old implementation
 						if (getConfig().contains("listShare."+args[1])) //if the mob is already configured to use a list
 						{
 							String currentmobtypename = getConfig().getString("listShare."+args[1]);
@@ -600,7 +691,7 @@ public final class MaskOfFutures extends JavaPlugin{
 							sender.sendMessage(ChatColor.GREEN + "Added " + "listShare."+args[1] + " to config with setting " + args[2] + ". Death messages for " + args[1] + " will now use list for " + args[2] + ".");
 							getConfig().set("listShare."+args[1], args[2]);
 							getLogger().info("[MOF] " + sender.getName() + " configured deaths by " + args[1] + " to use message list for " + args[2] + ".");
-						}
+						}*/
 					}
 					else
 					{
@@ -644,9 +735,14 @@ public final class MaskOfFutures extends JavaPlugin{
 						sender.sendMessage(ChatColor.RED + "/mofmsg renamecat [cat_oldname] [cat_newname]");
 					}
 				}
+				else if (args[0].equalsIgnoreCase("clearitemmsg"))
+				{
+					sender.sendMessage(ChatColor.RED + "/mofmsg clearitemmsg [category]\nUse /mofmsg to see list of permissible categories.\nNote the category must have separate .item and .noitem lists for this command to work.");
+				}
 				else
 				{
-					sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					//sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare] (arguments)\nUse /mofmsg to see list of permissible categories.");
+					displayGeneralMofmsgSyntax(sender);
 				}
 				return true;
 			}
@@ -827,33 +923,6 @@ public final class MaskOfFutures extends JavaPlugin{
 			return true;
 		}
 		
-		//special horse spawn eggs - when used, plugin will detect it and spawn the undead horse
-		//WIP?  at any rate it doesn't work right now
-		/*else if (cmd.getName().equals("zhegg"))
-		{
-			if (sender instanceof Player)
-			{
-				//TODO: Pull this lore from config
-				ItemStack i = new ItemStack(Material.MONSTER_EGG, 1);
-				i.setDurability((short)100);
-				ItemMeta ii = i.getItemMeta();
-				List<String> egglore = new ArrayList<String>();
-				egglore.add(ChatColor.GREEN + "" + ChatColor.ITALIC + "Zombie Horse");
-				ii.setLore(egglore);
-				i.setItemMeta(ii);
-				
-				Player p = (Player)sender;
-				p.getWorld().dropItem(p.getLocation(), i);
-			}
-			else if (sender instanceof ConsoleCommandSender) //doesn't take command blocks into account
-			{
-				//must take one argument, the player name
-				sender.sendMessage("You must be in game to run this command.");
-			}
-			
-			return true;
-		}*/
-		
 		/* This is commented out since /wear will be enabled with CH
 		else if (cmd.getName().equals("hat"))
 		{
@@ -989,5 +1058,83 @@ public final class MaskOfFutures extends JavaPlugin{
 		getConfig().set("msg."+mobtypename, deathMsgsList);
 		sender.sendMessage(ChatColor.GREEN + "Removed item reporting in death messages for " + mobtypename + ".");
 		getLogger().info("[MOF] " + sender.getName() + " removed item reporting from msg." + mobtypename + ".");
+	}
+	
+	public void displayGeneralMofmsgSyntax(CommandSender sender)
+	{
+		sender.sendMessage(ChatColor.RED + "/mofmsg [view|add|delete|addcat|delcat|renamecat|additem|delitem|viewitem|additemreport|delitemreport|addshare|delshare|viewshare|clearitemmsg] (arguments)\nUse /mofmsg to see list of permissible categories.");
+	}
+	
+	//returns true if there is at least one entry in the listShare String list that has
+	//an origin (first part of the listShare string entry) that matches the reason argument
+	//returns false if listShare String list is empty/doesn't exist or does not contain such an entry
+	public boolean hasListShare(String reason)
+	{
+		if (getConfig().contains("listShare"))
+		{
+			for (String share: getConfig().getStringList("listShare"))
+			{
+				if (reason.equalsIgnoreCase(getShareOrigin(share)))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	//getShareOrigin and getShareTarget both are copied over from BeingListener
+	private String getShareOrigin(String listShareString)
+	{
+		//this method assumes that listShareString is a concatenation of death message categories
+		//eg. "arrow.stray,arrow.skeleton"
+		//this method returns the substring BEFORE the comma, blank string if there is no comma
+		int pos = listShareString.indexOf(",");
+		if (pos >= 0)
+		{
+			return listShareString.substring(0,pos);
+		}
+		else //if it's -1 because there is no comma
+		{
+			return "";
+		}
+	}
+	
+	private String getShareTarget(String listShareString)
+	{
+		//this method assumes that listShareString is a concatenation of death message categories
+		//eg. "arrow.stray,arrow.skeleton"
+		//this method returns the substring AFTER the comma, blank string if there is no comma
+		int pos = listShareString.indexOf(",");
+		if (pos >= 0)
+		{
+			return listShareString.substring(pos+1,listShareString.length());
+		}
+		else //if it's -1 because there is no comma
+		{
+			return "";
+		}
+	}
+	
+	//this method adds a new, formatted String newentry to the listShare list in the config
+	public void addToListShareList(String newentry)
+	{
+		if (getConfig().contains("listShare"))
+		{
+			List<String> listShareList = getConfig().getStringList("listShare");
+			listShareList.add(newentry);
+			getConfig().set("listShare", listShareList);
+		}
+		else //if listShare does not exist, create it and add newentry to the list
+		{
+			getConfig().createSection("listShare");
+			List<String> listShareList = new LinkedList<String>();
+			listShareList.add(newentry);
+			getConfig().set("listShare", listShareList);
+		}
 	}
 }
